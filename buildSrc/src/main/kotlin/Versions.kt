@@ -44,13 +44,14 @@ object Versions {
     object Mod {
         const val mixin = "0.16.5+mixin.0.8.7"
         const val mixinExtras = "0.5.0"
-        
+
         const val minecraft = "1.21.11"
         const val yarn = "$minecraft+build.3"
         const val fabricLoader = "0.18.3"
-        
+
         const val architecturyLoom = "1.13.463"
         const val architecturyPlugin = "3.4.162"
+        const val yarnMappingsPatchNeoForge = "1.21+build.6"
 
     }
 //
@@ -58,7 +59,11 @@ object Versions {
 //        const val forge = "${Mod.minecraft}-48.0.13"
 //        const val burningwave = "12.63.0"
 //    }
-    
+
+    object NeoForge {
+        const val neoforge = "21.11.38-beta"  // NeoForge for Minecraft 1.21.11
+    }
+
     object Bukkit {
         const val minecraft = "1.21.11-rc3"
         const val nms = "$minecraft-R0.1"
