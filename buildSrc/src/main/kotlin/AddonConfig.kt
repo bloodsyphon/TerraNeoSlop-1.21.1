@@ -31,7 +31,7 @@ fun Project.addonDir(dir: File, task: Task) {
                 
                 logger.info("Copying addon ${jar.archiveFileName.get()} to ${target.absolutePath}. Base name: $base")
                 
-                jar.archiveFile.orNull?.asFile?.copyTo(target)
+                jar.archiveFile.orNull?.asFile?.copyTo(target, overwrite = true)
             }
         }
         

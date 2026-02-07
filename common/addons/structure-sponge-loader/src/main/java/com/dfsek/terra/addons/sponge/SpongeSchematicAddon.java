@@ -13,6 +13,8 @@ import net.querz.nbt.tag.ByteArrayTag;
 import net.querz.nbt.tag.CompoundTag;
 import net.querz.nbt.tag.IntTag;
 import net.querz.nbt.tag.Tag;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,6 +37,8 @@ import com.dfsek.terra.api.util.FileUtil;
 
 
 public class SpongeSchematicAddon implements AddonInitializer {
+    private static final Logger LOGGER = LoggerFactory.getLogger(SpongeSchematicAddon.class);
+
     @Inject
     private Platform platform;
 
@@ -58,6 +62,11 @@ public class SpongeSchematicAddon implements AddonInitializer {
             .getHandler(FunctionalEventHandler.class)
             .register(addon, ConfigPackPreLoadEvent.class)
             .then(event -> {
+                if(!canLoadSchematics()) {
+                    LOGGER.warn("Skipping .schem loading for pack {} because block state registries are not bootstrapped yet.",
+                        event.getPack().getRegistryKey());
+                    return;
+                }
                 CheckedRegistry<Structure> structureRegistry = event.getPack().getOrCreateRegistry(Structure.class);
                 try {
                     FileUtil.filesWithExtension(event.getPack().getRootPath(), ".schem")
@@ -76,6 +85,20 @@ public class SpongeSchematicAddon implements AddonInitializer {
                 }
             })
             .failThrough();
+    }
+
+    private boolean canLoadSchematics() {
+        try {
+            Class<?> bootstrap = Class.forName("net.minecraft.Bootstrap");
+            var initializedField = bootstrap.getDeclaredField("initialized");
+            initializedField.setAccessible(true);
+            return initializedField.getBoolean(null);
+        } catch(ClassNotFoundException e) {
+            return true;
+        } catch(ReflectiveOperationException e) {
+            LOGGER.debug("Unable to inspect Minecraft bootstrap state; deferring .schem loading.", e);
+            return false;
+        }
     }
 
     public SpongeStructure convert(InputStream in, String id) {

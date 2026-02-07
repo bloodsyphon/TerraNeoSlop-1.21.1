@@ -84,9 +84,13 @@ tasks {
         exclude("terra.lifecycle.mixins.json")
         exclude("terra.common.refmap.json")
         exclude("terra.lifecycle.refmap.json")
+        // NeoForge runtime already provides SLF4J; bundling it causes classloader LinkageError in PROD.
+        exclude("org/slf4j/**")
     }
 
     remapJar {
+        dependsOn("installAddons")
+
         inputFile.set(shadowJar.get().archiveFile)
         archiveFileName.set("${rootProject.name.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }}-neoforge-${project.version}.jar")
     }

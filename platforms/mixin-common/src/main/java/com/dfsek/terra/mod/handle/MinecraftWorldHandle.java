@@ -46,9 +46,6 @@ import static net.minecraft.command.argument.BlockArgumentParser.INVALID_BLOCK_I
 
 public class MinecraftWorldHandle implements WorldHandle {
 
-
-    private static final BlockState AIR = (BlockState) Blocks.AIR.getDefaultState();
-
     @SuppressWarnings("DataFlowIssue")
     @Override
     public @NotNull BlockState createBlockState(@NotNull String data) {
@@ -65,7 +62,11 @@ public class MinecraftWorldHandle implements WorldHandle {
                     nbtCompound.putInt("y", 0);
                     nbtCompound.putInt("z", 0);
 
-                    nbtCompound.put("id", BlockEntity.TYPE_CODEC, blockEntity.getType());
+                    Identifier blockEntityId = Registries.BLOCK_ENTITY_TYPE.getId(blockEntity.getType());
+                    if(blockEntityId == null) {
+                        throw new IllegalArgumentException("Unable to resolve block entity id for " + blockEntity.getType());
+                    }
+                    nbtCompound.putString("id", blockEntityId.toString());
 
                     blockState = (BlockStateExtended) new BlockStateArgument(state, blockResult.properties().keySet(), nbtCompound);
                 } else {
@@ -85,7 +86,7 @@ public class MinecraftWorldHandle implements WorldHandle {
 
     @Override
     public @NotNull BlockState air() {
-        return AIR;
+        return (BlockState) Blocks.AIR.getDefaultState();
     }
 
     @Override

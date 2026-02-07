@@ -9,8 +9,8 @@
         "RegistryMixin",
         "SimpleRegistryMixin",
         "lifecycle.MinecraftServerMixin",
-        "lifecycle.RegistryLoaderMixin",
-        "lifecycle.SaveLoadingMixin"
+        "__DISABLED__lifecycle.RegistryLoaderMixin",
+        "__DISABLED__lifecycle.SaveLoadingMixin"
     ],
     "server": [
     ],

@@ -59,8 +59,8 @@ import com.dfsek.terra.api.world.chunk.generation.util.GeneratorWrapper;
 import com.dfsek.terra.api.world.info.WorldProperties;
 import com.dfsek.terra.mod.config.PreLoadCompatibilityOptions;
 import com.dfsek.terra.mod.data.Codecs;
-import com.dfsek.terra.mod.mixin.access.StructureAccessorAccessor;
 import com.dfsek.terra.mod.util.MinecraftAdapter;
+import com.dfsek.terra.mod.util.ReflectionAccess;
 import com.dfsek.terra.mod.util.SeedHack;
 
 
@@ -78,10 +78,9 @@ public class MinecraftChunkGeneratorWrapper extends net.minecraft.world.gen.chun
         super(biomeSource);
         this.pack = configPack;
         this.settings = settingsSupplier;
-
-        this.delegate = pack.getGeneratorProvider().newInstance(pack);
-        logger.info("Loading world with config pack {}", pack.getID());
+        this.delegate = null;
         this.biomeSource = biomeSource;
+        logger.info("Queued world with config pack {}", pack.getID());
     }
 
     @Override
@@ -109,19 +108,20 @@ public class MinecraftChunkGeneratorWrapper extends net.minecraft.world.gen.chun
     public CompletableFuture<Chunk> populateNoise(Blender blender, NoiseConfig noiseConfig, StructureAccessor structureAccessor,
                                                   Chunk chunk) {
         return CompletableFuture.supplyAsync(() -> {
-            ProtoWorld world = (ProtoWorld) ((StructureAccessorAccessor) structureAccessor).getWorld();
+            ChunkGenerator activeDelegate = getOrCreateDelegate();
+            ProtoWorld world = (ProtoWorld) ReflectionAccess.getStructureAccessorWorld(structureAccessor);
             BiomeProvider biomeProvider = pack.getBiomeProvider();
-            delegate.generateChunkData((ProtoChunk) chunk, world, biomeProvider, chunk.getPos().x, chunk.getPos().z);
+            activeDelegate.generateChunkData((ProtoChunk) chunk, world, biomeProvider, chunk.getPos().x, chunk.getPos().z);
 
             PreLoadCompatibilityOptions compatibilityOptions = pack.getContext().get(PreLoadCompatibilityOptions.class);
             if(compatibilityOptions.isBeard()) {
-                beard(structureAccessor, chunk, world, biomeProvider, compatibilityOptions);
+                beard(activeDelegate, structureAccessor, chunk, world, biomeProvider, compatibilityOptions);
             }
             return chunk;
         }, Util.getMainWorkerExecutor());
     }
 
-    private void beard(StructureAccessor structureAccessor, Chunk chunk, WorldProperties world, BiomeProvider biomeProvider,
+    private void beard(ChunkGenerator delegate, StructureAccessor structureAccessor, Chunk chunk, WorldProperties world, BiomeProvider biomeProvider,
                        PreLoadCompatibilityOptions compatibilityOptions) {
         StructureWeightSampler structureWeightSampler = StructureWeightSampler.createStructureWeightSampler(structureAccessor,
             chunk.getPos());
@@ -161,6 +161,7 @@ public class MinecraftChunkGeneratorWrapper extends net.minecraft.world.gen.chun
     @Override
     public void generateFeatures(StructureWorldAccess world, Chunk chunk, StructureAccessor structureAccessor) {
         super.generateFeatures(world, chunk, structureAccessor);
+        getOrCreateDelegate();
         pack.getStages().forEach(populator -> {
             if(!(populator instanceof Chunkified)) {
                 populator.populate((ProtoWorld) world);
@@ -190,11 +191,12 @@ public class MinecraftChunkGeneratorWrapper extends net.minecraft.world.gen.chun
 
     @Override
     public int getHeight(int x, int z, Type heightmap, HeightLimitView height, NoiseConfig noiseConfig) {
+        ChunkGenerator activeDelegate = getOrCreateDelegate();
         WorldProperties properties = MinecraftAdapter.adapt(height, SeedHack.getSeed(noiseConfig.getMultiNoiseSampler()));
         BiomeProvider biomeProvider = pack.getBiomeProvider();
         int min = height.getBottomY();
         for(int y = height.getTopYInclusive() - 1; y >= min; y--) {
-            com.dfsek.terra.api.block.state.BlockState terraBlockState = delegate.getBlock(properties, x, y, z, biomeProvider);
+            com.dfsek.terra.api.block.state.BlockState terraBlockState = activeDelegate.getBlock(properties, x, y, z, biomeProvider);
             BlockState blockState =
                 (BlockState) (terraBlockState.isExtended() ? ((BlockStateExtended) terraBlockState).getState() : terraBlockState);
             if(heightmap
@@ -206,11 +208,12 @@ public class MinecraftChunkGeneratorWrapper extends net.minecraft.world.gen.chun
 
     @Override
     public VerticalBlockSample getColumnSample(int x, int z, HeightLimitView height, NoiseConfig noiseConfig) {
+        ChunkGenerator activeDelegate = getOrCreateDelegate();
         BlockState[] array = new BlockState[height.getHeight()];
         WorldProperties properties = MinecraftAdapter.adapt(height, SeedHack.getSeed(noiseConfig.getMultiNoiseSampler()));
         BiomeProvider biomeProvider = pack.getBiomeProvider();
         for(int y = height.getTopYInclusive() - 1; y >= height.getBottomY(); y--) {
-            com.dfsek.terra.api.block.state.BlockState terraBlockState = delegate.getBlock(properties, x, y, z, biomeProvider);
+            com.dfsek.terra.api.block.state.BlockState terraBlockState = activeDelegate.getBlock(properties, x, y, z, biomeProvider);
             BlockState blockState =
                 (BlockState) (terraBlockState.isExtended() ? ((BlockStateExtended) terraBlockState).getState() : terraBlockState);
             array[y - height.getBottomY()] = blockState;
@@ -244,7 +247,7 @@ public class MinecraftChunkGeneratorWrapper extends net.minecraft.world.gen.chun
 
     @Override
     public ChunkGenerator getHandle() {
-        return delegate;
+        return getOrCreateDelegate();
     }
 
     public GenerationSettings getSettings() {
@@ -254,5 +257,18 @@ public class MinecraftChunkGeneratorWrapper extends net.minecraft.world.gen.chun
     @Override
     public TerraBiomeSource getBiomeSource() {
         return biomeSource;
+    }
+
+    private ChunkGenerator getOrCreateDelegate() {
+        if(delegate == null) {
+            synchronized(this) {
+                if(delegate == null) {
+                    delegate = pack.getGeneratorProvider().newInstance(pack);
+                    biomeSource.setPack(pack);
+                    logger.info("Loading world with config pack {}", pack.getID());
+                }
+            }
+        }
+        return delegate;
     }
 }

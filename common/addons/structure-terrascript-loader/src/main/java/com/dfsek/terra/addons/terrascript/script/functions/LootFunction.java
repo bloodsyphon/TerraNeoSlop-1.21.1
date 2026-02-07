@@ -13,8 +13,8 @@ import com.dfsek.seismic.type.vector.Vector3;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Random;
 import java.util.random.RandomGenerator;
-import java.util.random.RandomGeneratorFactory;
 
 import com.dfsek.terra.addons.terrascript.parser.lang.ImplementationArguments;
 import com.dfsek.terra.addons.terrascript.parser.lang.Returnable;
@@ -84,8 +84,7 @@ public class LootFunction implements Function<Void> {
                         if(event.isCancelled()) return;
 
                         event.getTable().fillInventory(container.getInventory(),
-                            RandomGeneratorFactory.<RandomGenerator.SplittableGenerator>of(
-                                "Xoroshiro128PlusPlus").create(apply.hashCode()));
+                            new Random(apply.hashCode()));
                         data.update(false);
                     } catch(Exception e) {
                         LOGGER.error("Could not apply loot at {}", apply, e);

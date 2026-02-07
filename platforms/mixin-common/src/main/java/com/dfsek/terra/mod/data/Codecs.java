@@ -4,7 +4,13 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+
 import com.dfsek.terra.api.config.ConfigPack;
+import com.dfsek.terra.api.event.events.platform.PlatformInitializationEvent;
 import com.dfsek.terra.api.registry.key.RegistryKey;
 import com.dfsek.terra.api.util.range.ConstantRange;
 import com.dfsek.terra.mod.CommonPlatform;
@@ -15,6 +21,8 @@ import com.dfsek.terra.mod.implmentation.TerraIntProvider;
 
 
 public final class Codecs {
+    private static final Object CONFIG_PACK_LOAD_LOCK = new Object();
+
     public static final Codec<RegistryKey> TERRA_REGISTRY_KEY = RecordCodecBuilder
         .create(registryKey -> registryKey.group(Codec.STRING.fieldOf("namespace")
                     .stable()
@@ -31,9 +39,7 @@ public final class Codecs {
             .apply(config, config.stable(id -> CommonPlatform.get()
                 .getConfigRegistry()
                 .get(id)
-                .orElseThrow(() -> new IllegalArgumentException(
-                    "No such config pack " +
-                    id)))));
+                .orElseGet(() -> createDeferredConfigPack(id)))));
 
     public static final MapCodec<TerraBiomeSource> TERRA_BIOME_SOURCE = RecordCodecBuilder
         .mapCodec(instance -> instance.group(
@@ -77,4 +83,66 @@ public final class Codecs {
                 Codec.INT.fieldOf("max").stable().forGetter(TerraIntProvider::getMax))
             .apply(range, range.stable((min, max) -> new TerraIntProvider(new ConstantRange(
                 min, max)))));
+
+    private static ConfigPack createDeferredConfigPack(RegistryKey key) {
+        return (ConfigPack) Proxy.newProxyInstance(
+            Codecs.class.getClassLoader(),
+            new Class<?>[]{ ConfigPack.class },
+            new DeferredConfigPackHandler(key)
+        );
+    }
+
+    private static final class DeferredConfigPackHandler implements InvocationHandler {
+        private final RegistryKey key;
+        private ConfigPack resolved;
+
+        private DeferredConfigPackHandler(RegistryKey key) {
+            this.key = key;
+        }
+
+        private synchronized ConfigPack resolve() {
+            if(resolved != null) {
+                return resolved;
+            }
+
+            ConfigPack pack = CommonPlatform.get().getConfigRegistry().get(key).orElse(null);
+            if(pack == null) {
+                ensureConfigPacksLoaded();
+                pack = CommonPlatform.get().getConfigRegistry().get(key).orElse(null);
+            }
+            if(pack == null) {
+                throw new IllegalStateException("No such config pack " + key);
+            }
+            resolved = pack;
+            return pack;
+        }
+
+        @Override
+        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+            return switch(method.getName()) {
+                case "getRegistryKey" -> key;
+                case "getID" -> key.getID();
+                case "getNamespace" -> key.getNamespace();
+                case "toString" -> "DeferredConfigPack[" + key + "]";
+                case "hashCode" -> key.hashCode();
+                case "equals" -> args != null && args.length == 1 && args[0] instanceof ConfigPack other &&
+                                  key.equals(other.getRegistryKey());
+                default -> invokeResolved(method, args);
+            };
+        }
+
+        private Object invokeResolved(Method method, Object[] args) throws Throwable {
+            try {
+                return method.invoke(resolve(), args);
+            } catch(InvocationTargetException e) {
+                throw e.getCause();
+            }
+        }
+    }
+
+    private static void ensureConfigPacksLoaded() {
+        synchronized(CONFIG_PACK_LOAD_LOCK) {
+            CommonPlatform.get().getEventManager().callEvent(new PlatformInitializationEvent());
+        }
+    }
 }

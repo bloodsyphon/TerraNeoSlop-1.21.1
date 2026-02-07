@@ -25,9 +25,17 @@ public final class TagUtil {
     }
 
     private static <T> Map<TagKey<T>, List<RegistryEntry<T>>> tagsToMutableMap(Registry<T> registry) {
-        return registry.streamTags().collect(HashMap::new,
-            (map, tag) -> map.put(tag.getTag(), tag.stream().collect(Collectors.toList())),
-            HashMap::putAll);
+        try {
+            return registry.streamTags().collect(HashMap::new,
+                (map, tag) -> map.put(tag.getTag(), tag.stream().collect(Collectors.toList())),
+                HashMap::putAll);
+        } catch(IllegalStateException e) {
+            if("Tags not bound".equals(e.getMessage())) {
+                logger.warn("Tags were not bound yet for registry {}; starting from an empty tag set.", registry.getKey().getValue());
+                return new HashMap<>();
+            }
+            throw e;
+        }
     }
 
     public static void registerWorldPresetTags(Registry<WorldPreset> registry) {

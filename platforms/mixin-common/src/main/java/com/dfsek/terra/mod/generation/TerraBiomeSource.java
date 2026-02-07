@@ -42,8 +42,7 @@ public class TerraBiomeSource extends BiomeSource {
 
     public TerraBiomeSource(ConfigPack pack) {
         this.pack = pack;
-
-        LOGGER.debug("Biomes: " + getBiomes());
+        LOGGER.debug("Initialized Terra biome source for pack {}", pack.getRegistryKey());
     }
 
     @Override

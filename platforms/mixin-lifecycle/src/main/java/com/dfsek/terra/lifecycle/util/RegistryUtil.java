@@ -14,7 +14,6 @@ public final class RegistryUtil {
     }
 
     public static void register() {
-        MinecraftUtil.registerIntProviderTypes();
         Registry.register(Registries.CHUNK_GENERATOR, Identifier.of("terra:terra"), Codecs.MINECRAFT_CHUNK_GENERATOR_WRAPPER);
         Registry.register(Registries.BIOME_SOURCE, Identifier.of("terra:terra"), Codecs.TERRA_BIOME_SOURCE);
     }

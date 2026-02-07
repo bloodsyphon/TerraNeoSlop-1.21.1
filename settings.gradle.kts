@@ -16,12 +16,10 @@ includeImmediateChildren(file("common/implementation"), "implementation")
 
 includeImmediateChildren(file("common/addons"), "addon")
 
-includeImmediateChildren(file("platforms"), "platform")
-
-includeImmediateChildren(file("platforms/bukkit/nms"), "Bukkit NMS")
-
-include(":platforms:bukkit:common")
-include(":platforms:minestom:example")
+// Only build NeoForge platform for 1.21.11
+include(":platforms:mixin-common")
+include(":platforms:mixin-lifecycle")
+include(":platforms:neoforge")
 
 pluginManagement {
     repositories {

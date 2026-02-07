@@ -14,12 +14,12 @@ import org.spongepowered.asm.mixin.Intrinsic;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.dfsek.terra.api.block.BlockType;
 import com.dfsek.terra.api.block.state.BlockState;
 import com.dfsek.terra.api.block.state.properties.Property;
-import com.dfsek.terra.neoforge.mixin.access.StateAccessor;
 
 
 @Mixin(AbstractBlockState.class)
@@ -71,10 +71,19 @@ public abstract class BlockStateMixin extends State<Block, net.minecraft.block.B
         if(properties && !getEntries().isEmpty()) {
             data.append('[');
             data.append(
-                getEntries().entrySet().stream().map(StateAccessor.getPropertyMapPrinter()).collect(Collectors.joining(",")));
+                getEntries().entrySet().stream().map(BlockStateMixin::formatPropertyEntry).collect(Collectors.joining(",")));
             data.append(']');
         }
         return data.toString();
+    }
+
+    private static String formatPropertyEntry(Map.Entry<net.minecraft.state.property.Property<?>, Comparable<?>> entry) {
+        return propertyToString(entry.getKey(), entry.getValue());
+    }
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    private static String propertyToString(net.minecraft.state.property.Property property, Comparable value) {
+        return property.getName() + "=" + property.name(value);
     }
 
     @Intrinsic

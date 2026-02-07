@@ -114,13 +114,25 @@ public class PresetUtil {
 
         DimensionType dimensionType;
         if(!packInMetapack) {
-            dimensionType = DimensionUtil.createDimension(vanillaWorldProperties, defaultDimension, platform);
-            RegistryKey<DimensionType> dimensionTypeRegistryKey = MinecraftUtil.registerDimensionTypeKey(
-                dimensionTypeID);
-
-            Registry.registerReference(dimensionTypeRegistry, dimensionTypeRegistryKey, dimensionType);
+            DimensionType existing = dimensionTypeRegistry.get(dimensionTypeID);
+            if(existing != null) {
+                dimensionType = existing;
+            } else {
+                DimensionType generated = DimensionUtil.createDimension(vanillaWorldProperties, defaultDimension, platform);
+                if(generated.equals(defaultDimension)) {
+                    dimensionType = defaultDimension;
+                } else {
+                    RegistryKey<DimensionType> dimensionTypeRegistryKey = MinecraftUtil.registerDimensionTypeKey(
+                        dimensionTypeID);
+                    Registry.registerReference(dimensionTypeRegistry, dimensionTypeRegistryKey, generated);
+                    dimensionType = generated;
+                }
+            }
         } else {
             dimensionType = dimensionTypeRegistry.get(dimensionTypeID);
+            if(dimensionType == null) {
+                dimensionType = defaultDimension;
+            }
         }
 
         RegistryEntry<DimensionType> dimensionTypeRegistryEntry = dimensionTypeRegistry.getEntry(dimensionType);

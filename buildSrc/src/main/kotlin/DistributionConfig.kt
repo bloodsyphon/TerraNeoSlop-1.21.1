@@ -31,11 +31,12 @@ private fun Project.installAddonsInto(dest: Path) {
             val boot = if (extra.has("bootstrap") && extra.get("bootstrap") as Boolean) "bootstrap/" else ""
             val addonPath = fs.getPath("/addons/$boot${jar.archiveFileName.get()}")
             
+            addonPath.parent.createDirectories()
             if (!addonPath.exists()) {
-                addonPath.parent.createDirectories()
                 addonPath.createFile()
-                jar.archiveFile.get().asFile.toPath().copyTo(addonPath, overwrite = true)
             }
+            // Always overwrite to avoid stale embedded addons when version stays constant.
+            jar.archiveFile.get().asFile.toPath().copyTo(addonPath, overwrite = true)
             
         }
     }
