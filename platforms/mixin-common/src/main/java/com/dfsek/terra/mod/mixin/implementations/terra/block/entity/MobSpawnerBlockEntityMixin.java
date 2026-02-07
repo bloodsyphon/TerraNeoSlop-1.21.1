@@ -37,7 +37,7 @@ import com.dfsek.terra.api.block.entity.SerialState;
 import com.dfsek.terra.api.entity.EntityType;
 import com.dfsek.terra.mod.CommonPlatform;
 import com.dfsek.terra.mod.implmentation.MinecraftEntityTypeExtended;
-import com.dfsek.terra.mod.mixin.access.MobSpawnerLogicAccessor;
+import com.dfsek.terra.mod.util.ReflectionAccess;
 
 
 @Mixin(MobSpawnerBlockEntity.class)
@@ -56,7 +56,7 @@ public abstract class MobSpawnerBlockEntityMixin extends BlockEntity {
 
     public EntityType terra$getSpawnedType() {
         return (EntityType) Registries.ENTITY_TYPE.getEntry(
-                Identifier.tryParse(((MobSpawnerLogicAccessor) getLogic()).getSpawnEntry().getNbt().getString("id").orElseThrow()))
+                Identifier.tryParse(ReflectionAccess.getMobSpawnerEntry(getLogic()).getNbt().getString("id").orElseThrow()))
             .orElseThrow();
     }
 

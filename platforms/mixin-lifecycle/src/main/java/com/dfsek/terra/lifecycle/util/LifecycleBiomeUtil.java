@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Objects;
+import java.lang.reflect.Field;
 
 import com.dfsek.terra.api.config.ConfigPack;
 import com.dfsek.terra.api.world.biome.Biome;
@@ -18,13 +19,13 @@ import com.dfsek.terra.mod.CommonPlatform;
 import com.dfsek.terra.mod.config.PreLoadCompatibilityOptions;
 import com.dfsek.terra.mod.config.ProtoPlatformBiome;
 import com.dfsek.terra.mod.config.VanillaBiomeProperties;
-import com.dfsek.terra.mod.mixin.access.VillagerTypeAccessor;
 import com.dfsek.terra.mod.util.BiomeUtil;
 import com.dfsek.terra.mod.util.MinecraftUtil;
 
 
 public final class LifecycleBiomeUtil {
     private static final Logger logger = LoggerFactory.getLogger(LifecycleBiomeUtil.class);
+    private static final String[] VILLAGER_TYPE_FIELD_NAMES = { "BIOME_TO_TYPE", "BY_BIOME" };
 
     private LifecycleBiomeUtil() {
 
@@ -93,15 +94,35 @@ public final class LifecycleBiomeUtil {
                     minecraftBiome));
             }
 
-            Map<RegistryKey<net.minecraft.world.biome.Biome>, RegistryKey<VillagerType>> villagerMap =
-                VillagerTypeAccessor.getBiomeTypeToIdMap();
-
-            villagerMap.put(RegistryKey.of(RegistryKeys.BIOME, identifier),
-                Objects.requireNonNullElse(vanillaBiomeProperties.getVillagerType(),
-                    villagerMap.getOrDefault(vanilla, VillagerType.PLAINS)));
+            Map<RegistryKey<net.minecraft.world.biome.Biome>, RegistryKey<VillagerType>> villagerMap = getVillagerMap();
+            if(villagerMap != null) {
+                villagerMap.put(RegistryKey.of(RegistryKeys.BIOME, identifier),
+                    Objects.requireNonNullElse(vanillaBiomeProperties.getVillagerType(),
+                        villagerMap.getOrDefault(vanilla, VillagerType.PLAINS)));
+            }
 
             BiomeUtil.TERRA_BIOME_MAP.computeIfAbsent(vanilla.getValue(), i -> new ArrayList<>()).add(identifier);
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Map<RegistryKey<net.minecraft.world.biome.Biome>, RegistryKey<VillagerType>> getVillagerMap() {
+        for(String fieldName : VILLAGER_TYPE_FIELD_NAMES) {
+            try {
+                Field field = VillagerType.class.getDeclaredField(fieldName);
+                field.setAccessible(true);
+                return (Map<RegistryKey<net.minecraft.world.biome.Biome>, RegistryKey<VillagerType>>) field.get(null);
+            } catch(NoSuchFieldException ignored) {
+            } catch(IllegalAccessException e) {
+                logger.warn("Unable to access VillagerType {} map field.", fieldName, e);
+                return null;
+            } catch(ClassCastException e) {
+                logger.warn("VillagerType {} map field had unexpected type.", fieldName, e);
+                return null;
+            }
+        }
+        logger.warn("Unable to locate VillagerType biome-to-type map field.");
+        return null;
     }
 
 }

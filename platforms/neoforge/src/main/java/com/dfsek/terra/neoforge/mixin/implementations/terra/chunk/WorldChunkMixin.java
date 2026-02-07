@@ -18,7 +18,6 @@
 package com.dfsek.terra.neoforge.mixin.implementations.terra.chunk;
 
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.chunk.Chunk.TickSchedulers;
 import net.minecraft.world.chunk.WorldChunk;
 import net.minecraft.world.tick.OrderedTick;
 import org.jetbrains.annotations.NotNull;
@@ -47,14 +46,11 @@ public abstract class WorldChunkMixin {
 
     @Shadow
     @Nullable
-    public abstract net.minecraft.block.BlockState setBlockState(BlockPos pos, net.minecraft.block.BlockState state, boolean moved);
-
-    @Shadow
-    public abstract TickSchedulers getTickSchedulers();
+    public abstract net.minecraft.block.BlockState setBlockState(BlockPos pos, net.minecraft.block.BlockState state, int flags);
 
     public void terra$setBlock(int x, int y, int z, BlockState data, boolean physics) {
         BlockPos blockPos = new BlockPos(x, y, z);
-        setBlockState(blockPos, (net.minecraft.block.BlockState) data, false);
+        setBlockState(blockPos, (net.minecraft.block.BlockState) data, 0);
         if(physics) {
             net.minecraft.block.BlockState state = ((net.minecraft.block.BlockState) data);
             if(state.isLiquid()) {
@@ -68,7 +64,7 @@ public abstract class WorldChunkMixin {
 
     public void terra$setBlock(int x, int y, int z, @NotNull BlockState blockState) {
         ((net.minecraft.world.chunk.Chunk) (Object) this).setBlockState(new BlockPos(x, y, z), (net.minecraft.block.BlockState) blockState,
-            false);
+            0);
     }
 
     @Intrinsic

@@ -4,14 +4,10 @@
     "package": "com.dfsek.terra.mod.mixin",
     "compatibilityLevel": "JAVA_21",
     "mixins": [
-        "access.BiomeAccessor",
-        "access.MobSpawnerLogicAccessor",
-        "access.StateAccessor",
         "access.StructureAccessorAccessor",
-        "access.VillagerTypeAccessor",
         "access.WorldChunkAccessor",
-        "generalize.ServerWorldMixin",
-        "implementations.compat.GenerationSettingsFloraFeaturesMixin",
+        "__DISABLED__generalize.ServerWorldMixin",
+        "__DISABLED__implementations.compat.GenerationSettingsFloraFeaturesMixin",
         "implementations.terra.BiomeMixin",
         "implementations.terra.HandleImplementationMixin",
         "implementations.terra.block.BlockMixin",
@@ -40,7 +36,7 @@
         "implementations.terra.world.ServerWorldMixin",
         "invoke.BiomeInvoker",
         "invoke.FluidBlockInvoker",
-        "lifecycle.DataPackContentsMixin"
+        "__DISABLED__lifecycle.DataPackContentsMixin"
     ],
     "client": [
     ],

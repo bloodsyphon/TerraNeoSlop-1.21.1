@@ -23,7 +23,7 @@ public class GenerationSettingsFloraFeaturesMixin {
         this.flora = features;
     }
 
-    @Inject(method = "getFlowerFeatures", cancellable = true, at = @At("HEAD"))
+    @Inject(method = "getFlowerFeatures", cancellable = true, at = @At("HEAD"), remap = false)
     public void inject(CallbackInfoReturnable<List<ConfiguredFeature<?, ?>>> cir) {
         if(flora != null) {
             cir.setReturnValue(flora);

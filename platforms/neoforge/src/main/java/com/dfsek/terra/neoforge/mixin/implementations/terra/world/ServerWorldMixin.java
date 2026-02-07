@@ -24,6 +24,8 @@ import org.spongepowered.asm.mixin.Interface;
 import org.spongepowered.asm.mixin.Intrinsic;
 import org.spongepowered.asm.mixin.Mixin;
 
+import net.minecraft.entity.SpawnReason;
+
 import com.dfsek.terra.api.block.entity.BlockEntity;
 import com.dfsek.terra.api.block.state.BlockState;
 import com.dfsek.terra.api.config.ConfigPack;
@@ -42,9 +44,10 @@ import com.dfsek.terra.mod.util.MinecraftUtil;
 @Implements(@Interface(iface = ServerWorld.class, prefix = "terra$"))
 public abstract class ServerWorldMixin {
     public Entity terra$spawnEntity(double x, double y, double z, EntityType entityType) {
-        net.minecraft.entity.Entity entity = ((net.minecraft.entity.EntityType<?>) entityType).create(null);
+        net.minecraft.server.world.ServerWorld world = (net.minecraft.server.world.ServerWorld) (Object) this;
+        net.minecraft.entity.Entity entity = ((net.minecraft.entity.EntityType<?>) entityType).create(world, SpawnReason.CHUNK_GENERATION);
         entity.setPos(x, y, z);
-        ((net.minecraft.server.world.ServerWorld) (Object) this).spawnEntity(entity);
+        world.spawnEntity(entity);
         return (Entity) entity;
     }
 
@@ -73,7 +76,7 @@ public abstract class ServerWorldMixin {
     }
 
     public BlockEntity terra$getBlockEntity(int x, int y, int z) {
-        return MinecraftUtil.createState((WorldAccess) this, new BlockPos(x, y, z));
+        return MinecraftUtil.createBlockEntity((WorldAccess) this, new BlockPos(x, y, z));
     }
 
     public int terra$getMinHeight() {

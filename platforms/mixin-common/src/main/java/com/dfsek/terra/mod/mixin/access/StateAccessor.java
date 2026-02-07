@@ -28,7 +28,7 @@ import java.util.function.Function;
 
 @Mixin(State.class)
 public interface StateAccessor {
-    @Accessor("PROPERTY_MAP_PRINTER")
+    @Accessor(value = "PROPERTY_MAP_PRINTER", remap = false)
     static Function<Map.Entry<Property<?>, Comparable<?>>, String> getPropertyMapPrinter() {
         throw new UnsupportedOperationException();
     }

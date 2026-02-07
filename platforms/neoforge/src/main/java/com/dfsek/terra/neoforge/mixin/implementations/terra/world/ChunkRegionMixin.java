@@ -19,6 +19,7 @@ package com.dfsek.terra.neoforge.mixin.implementations.terra.world;
 
 import com.dfsek.terra.neoforge.mixin.invoke.FluidBlockInvoker;
 
+import net.minecraft.entity.SpawnReason;
 import net.minecraft.block.FluidBlock;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.util.collection.BoundedRegionArray;
@@ -102,7 +103,7 @@ public abstract class ChunkRegionMixin {
     }
 
     public int terraWorld$getMaxHeight() {
-        return world.getTopY();
+        return world.getTopYInclusive();
     }
 
     @Intrinsic(displace = true)
@@ -112,7 +113,7 @@ public abstract class ChunkRegionMixin {
     }
 
     public BlockEntity terraWorld$getBlockEntity(int x, int y, int z) {
-        return MinecraftUtil.createState((WorldAccess) this, new BlockPos(x, y, z));
+        return MinecraftUtil.createBlockEntity((WorldAccess) this, new BlockPos(x, y, z));
     }
 
     public int terraWorld$getMinHeight() {
@@ -128,7 +129,7 @@ public abstract class ChunkRegionMixin {
     }
 
     public Entity terraWorld$spawnEntity(double x, double y, double z, EntityType entityType) {
-        net.minecraft.entity.Entity entity = ((net.minecraft.entity.EntityType<?>) entityType).create(world);
+        net.minecraft.entity.Entity entity = ((net.minecraft.entity.EntityType<?>) entityType).create(world, SpawnReason.CHUNK_GENERATION);
         entity.setPos(x, y, z);
         ((ChunkRegion) (Object) this).spawnEntity(entity);
         return (Entity) entity;

@@ -11,7 +11,7 @@ import com.dfsek.terra.lifecycle.util.RegistryUtil;
 
 @Mixin(Registries.class)
 public class RegistryMixin {
-    @Inject(method = "<clinit>", at = @At("RETURN"))
+    @Inject(method = "<clinit>", at = @At("RETURN"), remap = false)
     private static void registerTerraGenerators(CallbackInfo ci) {
         RegistryUtil.register();
     }

@@ -36,7 +36,7 @@ import com.dfsek.terra.api.block.entity.MobSpawner;
 import com.dfsek.terra.api.block.entity.SerialState;
 import com.dfsek.terra.api.entity.EntityType;
 import com.dfsek.terra.mod.CommonPlatform;
-import com.dfsek.terra.neoforge.mixin.access.MobSpawnerLogicAccessor;
+import com.dfsek.terra.mod.util.ReflectionAccess;
 
 
 @Mixin(MobSpawnerBlockEntity.class)
@@ -53,8 +53,9 @@ public abstract class MobSpawnerBlockEntityMixin extends BlockEntity {
     public abstract void setEntityType(net.minecraft.entity.EntityType<?> entityType, Random random);
 
     public EntityType terra$getSpawnedType() {
-        return (EntityType) Registries.ENTITY_TYPE.get(
-            Identifier.tryParse(((MobSpawnerLogicAccessor) getLogic()).getSpawnEntry().getNbt().getString("id")));
+        return (EntityType) Registries.ENTITY_TYPE.getEntry(
+                Identifier.tryParse(ReflectionAccess.getMobSpawnerEntry(getLogic()).getNbt().getString("id").orElseThrow()))
+            .orElseThrow();
     }
 
     public void terra$setSpawnedType(@NotNull EntityType creatureType) {
