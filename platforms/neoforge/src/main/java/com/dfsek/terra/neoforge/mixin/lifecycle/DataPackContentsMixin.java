@@ -24,7 +24,7 @@ public class DataPackContentsMixin {
     @Final
     private ReloadableRegistries.Lookup reloadableRegistries;
 
-    @Inject(method = "applyPendingTagLoads()V", at = @At("RETURN"))
+    @Inject(method = "applyPendingTagLoads()V", at = @At("RETURN"), remap = false)
     private void injectAfterTagLoads(CallbackInfo ci) {
         RegistryWrapper.WrapperLookup lookup = this.reloadableRegistries.createRegistryLookup();
         if(lookup instanceof DynamicRegistryManager dynamicRegistryManager) {

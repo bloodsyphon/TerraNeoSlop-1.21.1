@@ -40,7 +40,8 @@ public class RegistryLoaderMixin {
             value = "INVOKE",
             target = "Ljava/util/List;forEach(Ljava/util/function/Consumer;)V",
             ordinal = 1
-        )
+        ),
+        remap = false
     )
     private static void beforeFreeze(@Coerce Object loadable, List<RegistryWrapper.Impl<?>> wrappers,
                                      List<RegistryLoader.Entry<?>> entries, boolean includeGameTestEntries,
@@ -93,7 +94,8 @@ public class RegistryLoaderMixin {
     private static void callLifecycleSetRegistries(Registry<?> biomes, Registry<?> dimensionTypes, Registry<?> chunkSettings,
                                                    Registry<?> noise, Registry<?> enchantments) {
         try {
-            Class<?> lifecyclePlatform = resolveTerraClass("com.dfsek.terra.lifecycle.LifecyclePlatform");
+            ClassLoader preferredLoader = biomes.getClass().getClassLoader();
+            Class<?> lifecyclePlatform = resolveTerraClass("com.dfsek.terra.lifecycle.LifecyclePlatform", preferredLoader);
             Method setRegistries = findMethodByNameAndArity(lifecyclePlatform, "setRegistries", 5);
             try {
                 setRegistries.invoke(null, biomes, dimensionTypes, chunkSettings, noise, enchantments);
@@ -109,7 +111,8 @@ public class RegistryLoaderMixin {
     @Unique
     private static void callLifecycleInitialize(MutableRegistry<?> biomes, MutableRegistry<?> worldPresets) {
         try {
-            Class<?> lifecycleUtil = resolveTerraClass("com.dfsek.terra.lifecycle.util.LifecycleUtil");
+            ClassLoader preferredLoader = biomes.getClass().getClassLoader();
+            Class<?> lifecycleUtil = resolveTerraClass("com.dfsek.terra.lifecycle.util.LifecycleUtil", preferredLoader);
             Method initialize = findMethodByNameAndArity(lifecycleUtil, "initialize", 2);
             try {
                 initialize.invoke(null, biomes, worldPresets);
@@ -167,17 +170,30 @@ public class RegistryLoaderMixin {
     }
 
     @Unique
-    private static Class<?> resolveTerraClass(String className) throws ClassNotFoundException {
-        ModuleLayer layer = RegistryLoader.class.getModule().getLayer();
-        if(layer != null) {
-            Optional<Module> terraModule = layer.findModule("terra");
-            if(terraModule.isPresent()) {
-                Class<?> resolved = Class.forName(terraModule.get(), className);
-                if(resolved != null) {
-                    return resolved;
-                }
+    private static Class<?> resolveTerraClass(String className, ClassLoader preferredLoader) throws ClassNotFoundException {
+        if(preferredLoader != null) {
+            try {
+                return Class.forName(className, false, preferredLoader);
+            } catch(ClassNotFoundException ignored) {
+                // Fallback to additional loaders below.
             }
         }
-        return Class.forName(className, false, RegistryLoader.class.getClassLoader());
+        ClassLoader mixinLoader = RegistryLoaderMixin.class.getClassLoader();
+        if(mixinLoader != null && mixinLoader != preferredLoader) {
+            try {
+                return Class.forName(className, false, mixinLoader);
+            } catch(ClassNotFoundException ignored) {
+                // Fallback to context/default loader below.
+            }
+        }
+        ClassLoader contextLoader = Thread.currentThread().getContextClassLoader();
+        if(contextLoader != null && contextLoader != preferredLoader && contextLoader != mixinLoader) {
+            try {
+                return Class.forName(className, false, contextLoader);
+            } catch(ClassNotFoundException ignored) {
+                // Final fallback below.
+            }
+        }
+        return Class.forName(className);
     }
 }
