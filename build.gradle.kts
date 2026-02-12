@@ -43,7 +43,7 @@ afterEvaluate {
     forImmediateSubProjects(":platforms") {
         configureDistribution()
     }
-    project(":platforms:bukkit:common").configureDistribution()
+    findProject(":platforms:bukkit:common")?.configureDistribution()
     forSubProjects(":common:addons") {
         apply(plugin = "com.gradleup.shadow")
 

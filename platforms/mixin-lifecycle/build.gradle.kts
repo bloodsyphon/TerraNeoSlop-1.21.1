@@ -13,7 +13,10 @@ dependencies {
     implementation(project(path = ":platforms:mixin-common", configuration = "namedElements")) { isTransitive = false }
 
     minecraft("com.mojang:minecraft:${Versions.Mod.minecraft}")
-    mappings("net.fabricmc:yarn:${Versions.Mod.yarn}:v2")
+    mappings(loom.layered {
+        mappings("net.fabricmc:yarn:${Versions.Mod.yarn}:v2")
+        mappings("dev.architectury:yarn-mappings-patch-neoforge:${Versions.Mod.yarnMappingsPatchNeoForge}")
+    })
 
     modImplementation("org.incendo", "cloud-fabric", Versions.Libraries.cloudFabric) {
         exclude("net.fabricmc")
@@ -25,6 +28,7 @@ loom {
     accessWidenerPath.set(project(":platforms:mixin-common").file("src/main/resources/terra.accesswidener"))
 
     mixin {
+        useLegacyMixinAp.set(true)
         defaultRefmapName.set("terra.lifecycle.refmap.json")
     }
 }
@@ -36,6 +40,6 @@ tasks {
 }
 
 architectury {
-    common("fabric")
+    common("fabric", "neoforge")
     minecraft = Versions.Mod.minecraft
 }

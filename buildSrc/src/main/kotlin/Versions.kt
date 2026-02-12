@@ -44,14 +44,19 @@ object Versions {
         const val yarn = "$minecraft+build.3"
         const val fabricLoader = "0.16.5"
         
-        const val architecuryLoom = "1.7.413"
-        const val architecturyPlugin = "3.4.159"
+        const val architecuryLoom = "1.11-SNAPSHOT"
+        const val architecturyPlugin = "3.4.162"
+        const val yarnMappingsPatchNeoForge = "1.21+build.6"
     }
 //
 //    object Forge {
 //        const val forge = "${Mod.minecraft}-48.0.13"
 //        const val burningwave = "12.63.0"
 //    }
+
+    object NeoForge {
+        const val neoforge = "21.1.219"  // NeoForge for Minecraft 1.21.1
+    }
     
     object Bukkit {
         const val minecraft = "1.21.1"
