@@ -34,8 +34,12 @@ public class RegistryLoaderMixin {
     private static final Logger LOGGER = LoggerFactory.getLogger(RegistryLoaderMixin.class);
 
     @Inject(
-        method = "load(Lnet/minecraft/registry/RegistryLoader$RegistryLoadable;Ljava/util/List;Ljava/util/List;Z)" +
-                 "Lnet/minecraft/registry/DynamicRegistryManager$Immutable;",
+        method = {
+            "load(Lnet/minecraft/registry/RegistryLoader$RegistryLoadable;Ljava/util/List;Ljava/util/List;Z)" +
+            "Lnet/minecraft/registry/DynamicRegistryManager$Immutable;",
+            "load(Lnet/minecraft/resources/RegistryDataLoader$LoadingFunction;Ljava/util/List;Ljava/util/List;Z)" +
+            "Lnet/minecraft/core/RegistryAccess$Frozen;"
+        },
         at = @At(
             value = "INVOKE",
             target = "Ljava/util/List;forEach(Ljava/util/function/Consumer;)V",
