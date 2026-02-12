@@ -25,7 +25,10 @@ public class NoiseConfigMixin {
     private MultiNoiseSampler multiNoiseSampler;
 
     @Inject(
-        method = "<init>(Lnet/minecraft/world/gen/chunk/ChunkGeneratorSettings;Lnet/minecraft/registry/RegistryEntryLookup;J)V",
+        method = {
+            "<init>(Lnet/minecraft/world/gen/chunk/ChunkGeneratorSettings;Lnet/minecraft/registry/RegistryEntryLookup;J)V",
+            "<init>(Lnet/minecraft/world/level/levelgen/NoiseGeneratorSettings;Lnet/minecraft/core/HolderGetter;J)V"
+        },
         at = @At("TAIL"),
         require = 0,
         remap = false

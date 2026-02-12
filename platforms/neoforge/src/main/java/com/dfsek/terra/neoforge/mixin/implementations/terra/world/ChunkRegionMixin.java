@@ -37,7 +37,9 @@ import org.spongepowered.asm.mixin.Interface;
 import org.spongepowered.asm.mixin.Intrinsic;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Coerce;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
@@ -82,9 +84,23 @@ public abstract class ChunkRegionMixin {
             method = "<init>(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/util/collection/BoundedRegionArray;Lnet/minecraft/world/chunk/ChunkGenerationStep;Lnet/minecraft/world/chunk/Chunk;)V",
             require = 0,
             remap = false)
-    public void injectConstructor(net.minecraft.server.world.ServerWorld world, BoundedRegionArray chunks,
-                                  ChunkGenerationStep generationStep, Chunk centerPos, CallbackInfo ci) {
-        this.terra$config = ((ServerWorld) world).getPack();
+    private void injectConstructorLocal(net.minecraft.server.world.ServerWorld world, BoundedRegionArray<?> chunks,
+                                        ChunkGenerationStep generationStep, Chunk centerPos, CallbackInfo ci) {
+        terra$setConfigFromWorld(world);
+    }
+
+    @Inject(at = @At("RETURN"),
+            method = "<init>(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/util/StaticCache2D;Lnet/minecraft/world/level/chunk/status/ChunkStep;Lnet/minecraft/world/level/chunk/ChunkAccess;)V",
+            require = 0,
+            remap = false)
+    private void injectConstructorProd(@Coerce Object world, @Coerce Object chunks,
+                                       @Coerce Object generationStep, @Coerce Object centerPos, CallbackInfo ci) {
+        terra$setConfigFromWorld(world);
+    }
+
+    @Unique
+    private void terra$setConfigFromWorld(Object worldObj) {
+        this.terra$config = ((ServerWorld) worldObj).getPack();
     }
 
 
