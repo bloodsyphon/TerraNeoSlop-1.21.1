@@ -28,7 +28,7 @@ public class DataPackContentsMixin {
     @Final
     private ReloadableRegistries.Lookup reloadableRegistries;
 
-    @Inject(method = "applyPendingTagLoads()V", at = @At("RETURN"), require = 0, remap = false)
+    @Inject(method = {"applyPendingTagLoads()V", "updateStaticRegistryTags()V"}, at = @At("RETURN"), require = 0, remap = false)
     private void injectAfterTagLoads(CallbackInfo ci) {
         terra$afterRegistryReload();
     }
