@@ -79,7 +79,9 @@ public abstract class ChunkRegionMixin {
 
 
     @Inject(at = @At("RETURN"),
-            method = "<init>(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/util/collection/BoundedRegionArray;Lnet/minecraft/world/chunk/ChunkGenerationStep;Lnet/minecraft/world/chunk/Chunk;)V")
+            method = "<init>(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/util/collection/BoundedRegionArray;Lnet/minecraft/world/chunk/ChunkGenerationStep;Lnet/minecraft/world/chunk/Chunk;)V",
+            require = 0,
+            remap = false)
     public void injectConstructor(net.minecraft.server.world.ServerWorld world, BoundedRegionArray chunks,
                                   ChunkGenerationStep generationStep, Chunk centerPos, CallbackInfo ci) {
         this.terra$config = ((ServerWorld) world).getPack();

@@ -41,6 +41,7 @@ public class RegistryLoaderMixin {
             target = "Ljava/util/List;forEach(Ljava/util/function/Consumer;)V",
             ordinal = 1
         ),
+        require = 0,
         remap = false
     )
     private static void beforeFreeze(@Coerce Object loadable, List<RegistryWrapper.Impl<?>> wrappers,

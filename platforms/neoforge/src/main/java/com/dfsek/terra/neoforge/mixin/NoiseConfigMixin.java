@@ -24,8 +24,12 @@ public class NoiseConfigMixin {
     @Final
     private MultiNoiseSampler multiNoiseSampler;
 
-    @Inject(method = "<init>(Lnet/minecraft/world/gen/chunk/ChunkGeneratorSettings;Lnet/minecraft/registry/RegistryEntryLookup;J)V",
-            at = @At("TAIL"))
+    @Inject(
+        method = "<init>(Lnet/minecraft/world/gen/chunk/ChunkGeneratorSettings;Lnet/minecraft/registry/RegistryEntryLookup;J)V",
+        at = @At("TAIL"),
+        require = 0,
+        remap = false
+    )
     private void mapMultiNoise(ChunkGeneratorSettings chunkGeneratorSettings,
                                RegistryEntryLookup<DoublePerlinNoiseSampler.NoiseParameters> noiseParametersLookup, long seed,
                                CallbackInfo ci) {
