@@ -55,16 +55,21 @@ public class RegistryLoaderMixin {
         if(entries.stream().noneMatch(entry -> entry.key() == RegistryKeys.BIOME)) {
             return;
         }
-        MutableRegistry<Biome> biomes = extractRegistry(registriesList, RegistryKeys.BIOME).orElseThrow();
-        MutableRegistry<DimensionType> dimensionTypes = extractRegistry(registriesList, RegistryKeys.DIMENSION_TYPE).orElseThrow();
-        MutableRegistry<WorldPreset> worldPresets = extractRegistry(registriesList, RegistryKeys.WORLD_PRESET).orElseThrow();
-        MutableRegistry<ChunkGeneratorSettings> chunkGeneratorSettings = extractRegistry(registriesList,
-            RegistryKeys.CHUNK_GENERATOR_SETTINGS).orElseThrow();
-        MutableRegistry<MultiNoiseBiomeSourceParameterList> multiNoiseBiomeSourceParameterLists = extractRegistry(registriesList,
-            RegistryKeys.MULTI_NOISE_BIOME_SOURCE_PARAMETER_LIST).orElseThrow();
-        MutableRegistry<Enchantment> enchantments = extractRegistry(registriesList, RegistryKeys.ENCHANTMENT).orElseThrow();
-        callLifecycleSetRegistries(biomes, dimensionTypes, chunkGeneratorSettings, multiNoiseBiomeSourceParameterLists, enchantments);
-        callLifecycleInitialize(biomes, worldPresets);
+        Optional<MutableRegistry<Biome>> biomes = extractRegistry(registriesList, RegistryKeys.BIOME);
+        Optional<MutableRegistry<DimensionType>> dimensionTypes = extractRegistry(registriesList, RegistryKeys.DIMENSION_TYPE);
+        Optional<MutableRegistry<WorldPreset>> worldPresets = extractRegistry(registriesList, RegistryKeys.WORLD_PRESET);
+        Optional<MutableRegistry<ChunkGeneratorSettings>> chunkGeneratorSettings = extractRegistry(registriesList,
+            RegistryKeys.CHUNK_GENERATOR_SETTINGS);
+        Optional<MutableRegistry<MultiNoiseBiomeSourceParameterList>> multiNoiseBiomeSourceParameterLists = extractRegistry(registriesList,
+            RegistryKeys.MULTI_NOISE_BIOME_SOURCE_PARAMETER_LIST);
+        Optional<MutableRegistry<Enchantment>> enchantments = extractRegistry(registriesList, RegistryKeys.ENCHANTMENT);
+        if(biomes.isEmpty() || dimensionTypes.isEmpty() || worldPresets.isEmpty() || chunkGeneratorSettings.isEmpty()
+           || multiNoiseBiomeSourceParameterLists.isEmpty() || enchantments.isEmpty()) {
+            return;
+        }
+        callLifecycleSetRegistries(biomes.get(), dimensionTypes.get(), chunkGeneratorSettings.get(),
+            multiNoiseBiomeSourceParameterLists.get(), enchantments.get());
+        callLifecycleInitialize(biomes.get(), worldPresets.get());
     }
 
     @Unique
