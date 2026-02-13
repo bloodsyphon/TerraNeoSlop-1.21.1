@@ -1,6 +1,15 @@
 <img align="left" width="64" height="64" src="https://raw.githubusercontent.com/wiki/PolyhedralDev/Terra/images/terra_logo.png" alt="Terra Logo">
 
-# Terra
+# TerraNeoSlop - A Terra fork made to work in NeoForge through the magic of AI vibe coding from a know-nothing. 
+
+I thought, can Claude Code vibe code this into working with NeoForge on MC 1.21.1? 
+Let's find out. About 6 hours of Claude Code and ChatGPT Codex tag team torturing this 
+beautiful mod and shockingly it loaded and worked. Codex get's the credit for making
+the final edits that got it working. Please understand I don't know what I'm doing,
+I didn't write a single line of code, and while it seems to load and work correctly 
+for me with and without Origen, god knows if it's really working properly. Please 
+respect the real Terra teams desire to keep trash like this out of their code base
+and don't mention it to them. SORRY GUYS!
 
 Terra is a modern world generation modding platform, primarily for Minecraft.
 Terra allows complete customization of world generation with an advanced API,
