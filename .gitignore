@@ -254,6 +254,7 @@ platforms/**/run/**
 
 # Local-only files not meant for repository
 /.claude/settings.local.json
+/automation/
 /platforms/neoforge/src/main/java/com/dfsek/terra/neoforge/mixin/lifecycle/DataPackContentsMixin.java.disabled
 /platforms/neoforge/src/main/java/com/dfsek/terra/neoforge/mixin/lifecycle/RegistryLoaderMixin.java.disabled
 /platforms/neoforge/src/main/java/com/dfsek/terra/neoforge/mixin/lifecycle/SaveLoadingMixin.java.disabled

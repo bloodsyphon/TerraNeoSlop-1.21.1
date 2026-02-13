@@ -1,5 +1,3 @@
-import java.util.*
-
 plugins {
     id("dev.architectury.loom") version Versions.Mod.architecturyLoom
     id("architectury-plugin") version Versions.Mod.architecturyPlugin
@@ -74,6 +72,9 @@ tasks {
     }
 
     shadowJar {
+        archiveBaseName.set("TerraNeoSlop-NeoForge-MC${Versions.Mod.minecraft}")
+        archiveVersion.set(project.version.toString())
+        archiveClassifier.set("shaded")
         // NeoForge uses platform-specific mixins; exclude common/lifecycle mixin classes and configs
         // Keep common access/invoke interfaces for shared code, but avoid Yarn-only mixins/refmaps in the final jar
         exclude("com/dfsek/terra/mod/mixin/implementations/**")
@@ -92,6 +93,6 @@ tasks {
         dependsOn("installAddons")
 
         inputFile.set(shadowJar.get().archiveFile)
-        archiveFileName.set("${rootProject.name.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }}-neoforge-${project.version}.jar")
+        archiveFileName.set("TerraNeoSlop-NeoForge-MC${Versions.Mod.minecraft}-${project.version}.jar")
     }
 }
