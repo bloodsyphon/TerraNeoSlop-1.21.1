@@ -251,3 +251,12 @@ platforms/**/run/**
 
 #Vale Config File
 **/.vale.ini
+
+# Local automation artifacts
+/automation/
+
+# Local operator docs/logs not required for build artifacts
+/ai_notes.md
+/CLAUDE.md
+/AGENTS.md
+/platforms/neoforge/IMPLEMENTATION_NOTES.md
