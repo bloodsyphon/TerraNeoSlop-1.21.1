@@ -20,19 +20,15 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Coerce;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Optional;
 
+import com.dfsek.terra.lifecycle.LifecyclePlatform;
+import com.dfsek.terra.lifecycle.util.LifecycleUtil;
 
 @Mixin(RegistryLoader.class)
 public class RegistryLoaderMixin {
-    @Unique
-    private static final Logger LOGGER = LoggerFactory.getLogger(RegistryLoaderMixin.class);
-
     @Inject(
         method = {
             "load(Lnet/minecraft/registry/RegistryLoader$RegistryLoadable;Ljava/util/List;Ljava/util/List;Z)" +
@@ -67,9 +63,9 @@ public class RegistryLoaderMixin {
            || multiNoiseBiomeSourceParameterLists.isEmpty() || enchantments.isEmpty()) {
             return;
         }
-        callLifecycleSetRegistries(biomes.get(), dimensionTypes.get(), chunkGeneratorSettings.get(),
+        LifecyclePlatform.setRegistries(biomes.get(), dimensionTypes.get(), chunkGeneratorSettings.get(),
             multiNoiseBiomeSourceParameterLists.get(), enchantments.get());
-        callLifecycleInitialize(biomes.get(), worldPresets.get());
+        LifecycleUtil.initialize(biomes.get(), worldPresets.get());
     }
 
     @Unique
@@ -93,117 +89,10 @@ public class RegistryLoaderMixin {
     @Unique
     private static void invokeRegistryBind(MutableRegistry<?> registry) {
         try {
-            Method method = registry.getClass().getMethod("terra_bind");
+            java.lang.reflect.Method method = registry.getClass().getMethod("terra_bind");
             method.invoke(registry);
         } catch(ReflectiveOperationException e) {
             throw new IllegalStateException("Failed to bind registry entries before Terra lifecycle initialization.", e);
         }
-    }
-
-    @Unique
-    private static void callLifecycleSetRegistries(Registry<?> biomes, Registry<?> dimensionTypes, Registry<?> chunkSettings,
-                                                   Registry<?> noise, Registry<?> enchantments) {
-        try {
-            ClassLoader preferredLoader = biomes.getClass().getClassLoader();
-            Class<?> lifecyclePlatform = resolveTerraClass("com.dfsek.terra.lifecycle.LifecyclePlatform", preferredLoader);
-            Method setRegistries = findMethodByNameAndArity(lifecyclePlatform, "setRegistries", 5);
-            try {
-                setRegistries.invoke(null, biomes, dimensionTypes, chunkSettings, noise, enchantments);
-            } catch(IllegalArgumentException e) {
-                throw new IllegalStateException(buildInvocationDiagnostics("setRegistries", setRegistries,
-                    biomes, dimensionTypes, chunkSettings, noise, enchantments), e);
-            }
-        } catch(ReflectiveOperationException e) {
-            throw new IllegalStateException("Failed to update Terra lifecycle registries.", e);
-        }
-    }
-
-    @Unique
-    private static void callLifecycleInitialize(MutableRegistry<?> biomes, MutableRegistry<?> worldPresets) {
-        try {
-            ClassLoader preferredLoader = biomes.getClass().getClassLoader();
-            Class<?> lifecycleUtil = resolveTerraClass("com.dfsek.terra.lifecycle.util.LifecycleUtil", preferredLoader);
-            Method initialize = findMethodByNameAndArity(lifecycleUtil, "initialize", 2);
-            try {
-                initialize.invoke(null, biomes, worldPresets);
-            } catch(IllegalArgumentException e) {
-                throw new IllegalStateException(buildInvocationDiagnostics("initialize", initialize, biomes, worldPresets), e);
-            }
-        } catch(ReflectiveOperationException e) {
-            throw new IllegalStateException("Failed to run Terra lifecycle initialization.", e);
-        }
-    }
-
-    @Unique
-    private static String buildInvocationDiagnostics(String label, Method method, Object... args) {
-        StringBuilder builder = new StringBuilder();
-        builder.append("Failed invoking Terra lifecycle method ").append(label).append(". ");
-        builder.append("owner=").append(method.getDeclaringClass().getName())
-            .append(" ownerLoader=").append(method.getDeclaringClass().getClassLoader())
-            .append(" ownerModule=").append(method.getDeclaringClass().getModule().getName()).append(' ');
-        builder.append("params=[");
-        Class<?>[] params = method.getParameterTypes();
-        for(int i = 0; i < params.length; i++) {
-            Class<?> param = params[i];
-            if(i > 0) builder.append(", ");
-            builder.append(param.getName())
-                .append("@").append(param.getClassLoader())
-                .append("#").append(System.identityHashCode(param));
-        }
-        builder.append("] args=[");
-        for(int i = 0; i < args.length; i++) {
-            Object arg = args[i];
-            if(i > 0) builder.append(", ");
-            if(arg == null) {
-                builder.append("null");
-            } else {
-                Class<?> type = arg.getClass();
-                builder.append(type.getName())
-                    .append("@").append(type.getClassLoader())
-                    .append("#").append(System.identityHashCode(type));
-            }
-        }
-        builder.append("]");
-        String message = builder.toString();
-        LOGGER.error(message);
-        return message;
-    }
-
-    @Unique
-    private static Method findMethodByNameAndArity(Class<?> owner, String name, int arity) throws NoSuchMethodException {
-        for(Method method : owner.getMethods()) {
-            if(method.getName().equals(name) && method.getParameterCount() == arity) {
-                return method;
-            }
-        }
-        throw new NoSuchMethodException(owner.getName() + "." + name + " with " + arity + " parameters");
-    }
-
-    @Unique
-    private static Class<?> resolveTerraClass(String className, ClassLoader preferredLoader) throws ClassNotFoundException {
-        if(preferredLoader != null) {
-            try {
-                return Class.forName(className, false, preferredLoader);
-            } catch(ClassNotFoundException ignored) {
-                // Fallback to additional loaders below.
-            }
-        }
-        ClassLoader mixinLoader = RegistryLoaderMixin.class.getClassLoader();
-        if(mixinLoader != null && mixinLoader != preferredLoader) {
-            try {
-                return Class.forName(className, false, mixinLoader);
-            } catch(ClassNotFoundException ignored) {
-                // Fallback to context/default loader below.
-            }
-        }
-        ClassLoader contextLoader = Thread.currentThread().getContextClassLoader();
-        if(contextLoader != null && contextLoader != preferredLoader && contextLoader != mixinLoader) {
-            try {
-                return Class.forName(className, false, contextLoader);
-            } catch(ClassNotFoundException ignored) {
-                // Final fallback below.
-            }
-        }
-        return Class.forName(className);
     }
 }
