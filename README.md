@@ -1,72 +1,15 @@
-<img align="left" width="64" height="64" src="https://raw.githubusercontent.com/wiki/PolyhedralDev/Terra/images/terra_logo.png" alt="Terra Logo">
+# TerraNeoSlop - A Terra fork made to work in NeoForge through the magic of AI vibe coding. 
 
-# TerraNeoSlop - A Terra fork made to work in NeoForge through the magic of AI vibe coding from a know-nothing. 
-
-I thought, can Claude Code vibe code this into working with NeoForge on MC 1.21.1? 
-Let's find out. About 6 hours of Claude Code and ChatGPT Codex tag team torturing this 
-beautiful mod and shockingly it loaded and worked. Codex get's the credit for making
-the final edits that got it working. Please understand I don't know what I'm doing,
-I didn't write a single line of code, and while it seems to load and work correctly 
-for me with and without Origen, god knows if it's really working properly. Please 
-respect the real Terra teams desire to keep trash like this out of their code base
-and don't mention it to them. SORRY GUYS!
-
-Terra is a modern world generation modding platform, primarily for Minecraft.
-Terra allows complete customization of world generation with an advanced API,
-tightly integrated with a powerful configuration system.
-
-Terra consists of several parts:
-
-* A voxel world generation API with emphasis on configuration and extensibility
-* Several platform implementations, the layer between the API and the platform
-  it's running on.
-* An addon loader, which allows addons to interface with the Terra API in a
-  platform-agnostic setting
-* Several "core addons," which implement the "default" configurations of Terra.
-  These addons can be thought of as the config "standard library"
-
-Terra currently officially supports the Fabric mod loader and the Bukkit API
-(Paper and friends). We welcome Pull Requests implementing additional platforms!
-
-## Downloads:
-
-* Fabric: [Modrinth](https://modrinth.com/mod/terra)
-  / [CurseForge](https://www.curseforge.com/minecraft/mc-mods/terra-world-generator)
-* Paper+ servers (Paper, Tuinity, Purpur,
-  etc): [SpigotMC](https://www.spigotmc.org/resources/85151/)
+This is a shoddy AI slop generated fork of Terra to get it working in NeoForge, hence the name. 
 
 ## Building and Running Terra
 
 To build, simply run `./gradlew build` (`gradlew.bat build` on Windows). This
-will build all platforms, and produce JARs in `platforms/<platform>/build/libs`
-
-### Production JARs:
-
-* Bukkit: `Terra-<version>-shaded.jar`
-* Fabric: `Terra-<version>-shaded-mapped.jar`
-
-### Building a Specific Platform
-
-To build a specific platform, run `gradlew :platforms:<platform>:build`.
-
-JARs are produced in `platforms/<platform>/build/libs`.
-
-### Running Minecraft in the IDE
-
-To run Minecraft with Terra in the IDE (for testing) use the following tasks:
-
-* Bukkit
-    * `runServer` - Run the Paper test server with Terra installed.
-* Fabric
-    * `runClient` - Run a Minecraft Fabric client with Terra installed.
-    * `runServer` - Run a Minecraft Fabric server with Terra installed.
+will build only the NeoForge platform. The other platforms have been disabled. 
 
 ## Contributing
 
-Contributions are welcome! If you want to see a feature in Terra, please, open
-an issue, or implement it yourself and submit a PR!
-Join the discord [here](https://discord.gg/PXUEbbF) if you would like to talk
-more about the project!
+Contributions are welcome! 
 
 ## Licensing
 
@@ -87,24 +30,4 @@ If you're not sure which license a particular file is under, check:
 
 * The file's header
 * The LICENSE file in the closest parent folder of the file in question
-
-## Beta
-
-Terra is still in beta! While it is stable, it is not feature-complete. There is
-a lot to be added!
-
-## Special Thanks
-
-[![YourKit-Logo](https://www.yourkit.com/images/yklogo.png)](https://www.yourkit.com/)
-
-YourKit has granted Polyhedral Development an open-source license to their
-outstanding Java profiler, allowing us to make our software as performant as it
-can be!
-
-YourKit supports open source projects with innovative and intelligent tools for
-monitoring and profiling Java and .NET applications. YourKit is the creator of
-the
-[YourKit Java Profiler](https://www.yourkit.com/java/profiler/),
-[YourKit .NET Profiler](https://www.yourkit.com/.net/profiler/),
-and [YourKit YouMonitor](https://www.yourkit.com/youmonitor/).
 
