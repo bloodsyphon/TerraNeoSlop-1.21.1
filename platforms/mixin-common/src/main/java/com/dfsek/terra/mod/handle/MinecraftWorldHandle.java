@@ -34,6 +34,8 @@ import net.minecraft.registry.entry.RegistryEntry.Reference;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.dfsek.terra.api.block.state.BlockState;
 import com.dfsek.terra.api.block.state.BlockStateExtended;
@@ -46,10 +48,24 @@ import static net.minecraft.command.argument.BlockArgumentParser.INVALID_BLOCK_I
 
 public class MinecraftWorldHandle implements WorldHandle {
 
+    private static final BlockState AIR = (BlockState) Blocks.AIR.getDefaultState();
+
+    private static final Logger logger = LoggerFactory.getLogger(MinecraftWorldHandle.class);
+
     @SuppressWarnings("DataFlowIssue")
     @Override
     public @NotNull BlockState createBlockState(@NotNull String data) {
         try {
+            if(data.equals("minecraft:grass")) {
+                data = "minecraft:short_grass";
+                logger.warn(
+                    "Translating minecraft:grass to minecraft:short_grass. In 1.20.3 minecraft:grass was renamed to minecraft:short_grass");
+            }
+            if(data.equals("minecraft:chain")) {
+                data = "minecraft:iron_chain";
+                logger.warn(
+                    "Translating minecraft:chain to minecraft:iron_chain. In 1.21.11 minecraft:chain was renamed to minecraft:iron_chain");
+            }
             BlockResult blockResult = BlockArgumentParser.block(Registries.BLOCK, data, true);
             BlockState blockState;
             if(blockResult.nbt() != null) {
@@ -80,7 +96,23 @@ public class MinecraftWorldHandle implements WorldHandle {
             if(blockState == null) throw new IllegalArgumentException("Invalid data: " + data);
             return blockState;
         } catch(CommandSyntaxException e) {
-            throw new IllegalArgumentException(e);
+            logger.warn("Unknown block state '{}'; falling back to air for 1.21.11 compatibility.", data);
+            return AIR;
+        } catch(IllegalArgumentException e) {
+            if(e.getCause() instanceof CommandSyntaxException) {
+                logger.warn("Unknown block state '{}'; falling back to air for 1.21.11 compatibility.", data);
+                return AIR;
+            }
+            throw e;
+        } catch(RuntimeException e) {
+            if(e.getCause() instanceof CommandSyntaxException) {
+                logger.warn("Unknown block state '{}'; falling back to air for 1.21.11 compatibility.", data);
+                return AIR;
+            }
+            throw e;
+        } catch(Exception e) {
+            logger.warn("Unknown block state '{}'; falling back to air for 1.21.11 compatibility.", data);
+            return AIR;
         }
     }
 
