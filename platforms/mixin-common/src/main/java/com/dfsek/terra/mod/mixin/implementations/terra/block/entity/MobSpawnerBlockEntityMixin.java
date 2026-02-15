@@ -36,7 +36,6 @@ import com.dfsek.terra.api.block.entity.MobSpawner;
 import com.dfsek.terra.api.block.entity.SerialState;
 import com.dfsek.terra.api.entity.EntityType;
 import com.dfsek.terra.mod.CommonPlatform;
-import com.dfsek.terra.mod.implmentation.MinecraftEntityTypeExtended;
 import com.dfsek.terra.mod.mixin.access.MobSpawnerLogicAccessor;
 
 
@@ -49,28 +48,23 @@ public abstract class MobSpawnerBlockEntityMixin extends BlockEntity {
 
     @Shadow
     public abstract MobSpawnerLogic getLogic();
-
-    //method_46408
+//method_46408
     @Shadow
     public abstract void setEntityType(net.minecraft.entity.EntityType<?> entityType, Random random);
 
     public EntityType terra$getSpawnedType() {
-        return (EntityType) Registries.ENTITY_TYPE.getEntry(
-                Identifier.tryParse(((MobSpawnerLogicAccessor) getLogic()).getSpawnEntry().getNbt().getString("id").orElseThrow()))
-            .orElseThrow();
+        return (EntityType) Registries.ENTITY_TYPE.get(
+            Identifier.tryParse(((MobSpawnerLogicAccessor) getLogic()).getSpawnEntry().getNbt().getString("id")));
     }
 
     public void terra$setSpawnedType(@NotNull EntityType creatureType) {
         Random rand;
-        if(hasWorld()) {
+        if (hasWorld()) {
             rand = world.getRandom();
         } else {
             rand = Random.create();
         }
-        net.minecraft.entity.EntityType<?> entityType =
-            (((net.minecraft.entity.EntityType<?>) (creatureType.isExtended() && creatureType.getClass().equals(
-                MinecraftEntityTypeExtended.class) ? ((MinecraftEntityTypeExtended) creatureType).getType() : creatureType)));
-        setEntityType(entityType, rand);
+        setEntityType((net.minecraft.entity.EntityType<?>) creatureType, rand);
     }
 
     public int terra$getDelay() {

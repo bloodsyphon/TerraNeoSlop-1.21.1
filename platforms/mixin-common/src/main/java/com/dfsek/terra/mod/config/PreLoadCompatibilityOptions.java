@@ -42,10 +42,6 @@ public class PreLoadCompatibilityOptions implements ConfigTemplate, Properties {
     @Default
     private double airThreshold = -0.5;
 
-    @Value("minecraft.inject-flora")
-    @Default
-    private boolean injectFlora = false;
-
     public boolean useVanillaBiomes() {
         return vanillaBiomes;
     }
@@ -60,9 +56,5 @@ public class PreLoadCompatibilityOptions implements ConfigTemplate, Properties {
 
     public double getAirThreshold() {
         return airThreshold;
-    }
-
-    public boolean isInjectFlora() {
-        return injectFlora;
     }
 }

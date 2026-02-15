@@ -1,6 +1,7 @@
 package com.dfsek.terra.mod.mixin.implementations.terra.block.state;
 
 
+import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.MapCodec;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
 import net.minecraft.block.AbstractBlock.AbstractBlockState;

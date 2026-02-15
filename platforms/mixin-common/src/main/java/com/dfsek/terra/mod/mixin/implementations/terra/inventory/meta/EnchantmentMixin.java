@@ -17,7 +17,10 @@
 
 package com.dfsek.terra.mod.mixin.implementations.terra.inventory.meta;
 
+import com.dfsek.terra.mod.CommonPlatform;
+
 import net.minecraft.enchantment.Enchantment;
+import net.minecraft.registry.Registries;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.entry.RegistryEntryList;
 import org.spongepowered.asm.mixin.Final;
@@ -29,7 +32,6 @@ import org.spongepowered.asm.mixin.Shadow;
 import java.util.Objects;
 
 import com.dfsek.terra.api.inventory.ItemStack;
-import com.dfsek.terra.mod.CommonPlatform;
 
 import static net.minecraft.enchantment.Enchantment.canBeCombined;
 
@@ -38,11 +40,11 @@ import static net.minecraft.enchantment.Enchantment.canBeCombined;
 @Implements(@Interface(iface = com.dfsek.terra.api.inventory.item.Enchantment.class, prefix = "terra$"))
 public abstract class EnchantmentMixin {
     @Shadow
-    @Final
-    private RegistryEntryList<Enchantment> exclusiveSet;
+    public abstract boolean isAcceptableItem(net.minecraft.item.ItemStack stack);
 
     @Shadow
-    public abstract boolean isAcceptableItem(net.minecraft.item.ItemStack stack);
+    @Final
+    private RegistryEntryList<Enchantment> exclusiveSet;
 
     @SuppressWarnings("ConstantConditions")
     public boolean terra$canEnchantItem(ItemStack itemStack) {

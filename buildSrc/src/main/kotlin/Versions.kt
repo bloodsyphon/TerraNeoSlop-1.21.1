@@ -4,6 +4,8 @@ object Versions {
         const val reimagENDConfig = "latest"
         const val tartarusConfig = "latest"
         const val defaultConfig = "latest"
+        const val origenTag = "v2.2.1"
+        const val origenPackVersion = "2.2.1"
     }
     
     object Libraries {
@@ -45,12 +47,13 @@ object Versions {
         const val mixin = "0.16.4+mixin.0.8.7"
         const val mixinExtras = "0.5.0"
         
-        const val minecraft = "1.21.10"
-        const val yarn = "$minecraft+build.1"
+        const val minecraft = "1.21.1"
+        const val yarn = "$minecraft+build.3"
         const val fabricLoader = "0.18.2"
         
         const val architecuryLoom = "1.11.451"
         const val architecturyPlugin = "3.4.162"
+        const val yarnMappingsPatchNeoForge = "1.21+build.6"
 
     }
 //
@@ -58,6 +61,10 @@ object Versions {
 //        const val forge = "${Mod.minecraft}-48.0.13"
 //        const val burningwave = "12.63.0"
 //    }
+
+    object NeoForge {
+        const val neoforge = "21.1.219"
+    }
     
     object Bukkit {
         const val minecraft = "1.21.10"

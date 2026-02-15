@@ -17,11 +17,10 @@
 
 package com.dfsek.terra.mod.mixin.implementations.terra.chunk;
 
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.command.argument.BlockStateArgument;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.chunk.Chunk.TickSchedulers;
 import net.minecraft.world.chunk.WorldChunk;
+import net.minecraft.world.tick.OrderedTick;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
@@ -32,10 +31,8 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
 import com.dfsek.terra.api.block.state.BlockState;
-import com.dfsek.terra.api.block.state.BlockStateExtended;
 import com.dfsek.terra.api.world.ServerWorld;
 import com.dfsek.terra.api.world.chunk.Chunk;
-import com.dfsek.terra.mod.util.MinecraftUtil;
 
 
 @Mixin(WorldChunk.class)
@@ -50,36 +47,28 @@ public abstract class WorldChunkMixin {
 
     @Shadow
     @Nullable
-    public abstract net.minecraft.block.BlockState setBlockState(BlockPos pos, net.minecraft.block.BlockState state, int flags);
+    public abstract net.minecraft.block.BlockState setBlockState(BlockPos pos, net.minecraft.block.BlockState state, boolean moved);
 
     @Shadow
-    protected abstract BlockEntity loadBlockEntity(BlockPos pos, NbtCompound nbt);
+    public abstract TickSchedulers getTickSchedulers();
 
-    @SuppressWarnings("ConstantValue")
     public void terra$setBlock(int x, int y, int z, BlockState data, boolean physics) {
         BlockPos blockPos = new BlockPos(x, y, z);
-        net.minecraft.block.BlockState state;
-
-        boolean isExtended = MinecraftUtil.isCompatibleBlockStateExtended(data);
-
-        if(isExtended) {
-            BlockStateArgument arg = ((BlockStateArgument) data);
-            state = arg.getBlockState();
-            setBlockState(blockPos, state, 0);
-            loadBlockEntity(blockPos, ((NbtCompound) (Object) ((BlockStateExtended) data).getData()));
-        } else {
-            state = (net.minecraft.block.BlockState) data;
-            setBlockState(blockPos, state, 0);
-        }
-
+        setBlockState(blockPos, (net.minecraft.block.BlockState) data, false);
         if(physics) {
-            MinecraftUtil.schedulePhysics(state, blockPos, world.getFluidTickScheduler(), world.getBlockTickScheduler());
+            net.minecraft.block.BlockState state = ((net.minecraft.block.BlockState) data);
+            if(state.isLiquid()) {
+                world.getFluidTickScheduler().scheduleTick(OrderedTick.create(state.getFluidState().getFluid(), blockPos));
+            } else {
+                world.getBlockTickScheduler().scheduleTick(OrderedTick.create(state.getBlock(), blockPos));
+            }
+
         }
     }
 
-    @SuppressWarnings("ConstantValue")
-    public void terra$setBlock(int x, int y, int z, @NotNull BlockState data) {
-        terra$setBlock(x, y, z, data, false);
+    public void terra$setBlock(int x, int y, int z, @NotNull BlockState blockState) {
+        ((net.minecraft.world.chunk.Chunk) (Object) this).setBlockState(new BlockPos(x, y, z), (net.minecraft.block.BlockState) blockState,
+            false);
     }
 
     @Intrinsic

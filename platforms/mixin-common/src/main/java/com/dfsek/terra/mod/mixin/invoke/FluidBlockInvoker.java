@@ -10,5 +10,5 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 @Mixin(FluidBlock.class)
 public interface FluidBlockInvoker {
     @Invoker("getFluidState")
-    FluidState invokeGetFluidState(BlockState state);
+    public FluidState invokeGetFluidState(BlockState state);
 }

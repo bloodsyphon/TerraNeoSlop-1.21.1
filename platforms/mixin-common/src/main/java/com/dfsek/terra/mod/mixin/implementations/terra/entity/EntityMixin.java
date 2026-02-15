@@ -17,7 +17,6 @@
 
 package com.dfsek.terra.mod.mixin.implementations.terra.entity;
 
-import com.dfsek.seismic.type.vector.Vector3;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
 import org.spongepowered.asm.mixin.Implements;
@@ -25,6 +24,7 @@ import org.spongepowered.asm.mixin.Interface;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
+import com.dfsek.seismic.type.vector.Vector3;
 import com.dfsek.terra.api.world.ServerWorld;
 import com.dfsek.terra.mod.util.MinecraftAdapter;
 
@@ -33,7 +33,7 @@ import com.dfsek.terra.mod.util.MinecraftAdapter;
 @Implements(@Interface(iface = com.dfsek.terra.api.entity.Entity.class, prefix = "terra$"))
 public abstract class EntityMixin {
     @Shadow
-    private net.minecraft.world.World world;
+    public net.minecraft.world.World world;
 
     @Shadow
     private BlockPos blockPos;

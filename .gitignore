@@ -248,6 +248,7 @@ nbdist/
 **/testDir/
 
 platforms/**/run/**
+/automation/
 
 #Vale Config File
 **/.vale.ini

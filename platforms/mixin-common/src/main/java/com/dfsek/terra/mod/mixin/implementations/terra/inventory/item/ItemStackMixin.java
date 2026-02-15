@@ -17,10 +17,13 @@
 
 package com.dfsek.terra.mod.mixin.implementations.terra.inventory.item;
 
+import net.minecraft.component.Component;
 import net.minecraft.component.ComponentChanges;
 import net.minecraft.component.ComponentMap;
-import net.minecraft.component.MergedComponentMap;
+import net.minecraft.component.ComponentMapImpl;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtCompound;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Implements;
 import org.spongepowered.asm.mixin.Interface;
@@ -36,10 +39,6 @@ import com.dfsek.terra.api.inventory.item.ItemMeta;
 @Implements(@Interface(iface = com.dfsek.terra.api.inventory.ItemStack.class, prefix = "terra$"))
 public abstract class ItemStackMixin {
     @Shadow
-    @Final
-    private MergedComponentMap components;
-
-    @Shadow
     public abstract int getCount();
 
     @Shadow
@@ -53,6 +52,10 @@ public abstract class ItemStackMixin {
 
     @Shadow
     public abstract ComponentMap getComponents();
+
+    @Shadow
+    @Final
+    private ComponentMapImpl components;
 
     public int terra$getAmount() {
         return getCount();

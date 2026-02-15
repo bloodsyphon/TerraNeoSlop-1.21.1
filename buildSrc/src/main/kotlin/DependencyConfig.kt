@@ -30,6 +30,15 @@ fun Project.configureDependencies() {
     repositories {
         mavenCentral()
         gradlePluginPortal()
+        maven("https://maven.neoforged.net/releases/") {
+            name = "NeoForge"
+            content {
+                includeGroupByRegex("net\\.neoforged(\\..*)?")
+            }
+        }
+        maven("https://maven.architectury.dev/") {
+            name = "Architectury"
+        }
         maven("https://maven.solo-studios.ca/releases") {
             name = "Solo Studios"
         }

@@ -17,13 +17,13 @@
 
 package com.dfsek.terra.mod.util;
 
-import com.dfsek.seismic.type.vector.Vector3;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.HeightLimitView;
 
 import java.util.random.RandomGenerator;
 
+import com.dfsek.seismic.type.vector.Vector3;
 import com.dfsek.terra.api.world.info.WorldProperties;
 
 
@@ -42,7 +42,7 @@ public final class MinecraftAdapter {
 
             @Override
             public int getMaxHeight() {
-                return height.getTopYInclusive();
+                return height.getTopY();
             }
 
             @Override

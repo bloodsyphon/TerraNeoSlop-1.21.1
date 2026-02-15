@@ -56,11 +56,15 @@ fun Project.configureDistribution() {
                     URL("https://github.com/PolyhedralDev/ReimagEND/releases/download/" + Versions.Terra.reimagENDConfig + "/ReimagEND.zip")
                 val tartarusPackUrl =
                     URL("https://github.com/PolyhedralDev/Tartarus/releases/download/" + Versions.Terra.tartarusConfig + "/Tartarus.zip")
+                val origenPackUrl =
+                    URL("https://github.com/bloodsyphon/Origen/releases/download/" + Versions.Terra.origenTag + "/origen-v" +
+                        Versions.Terra.origenPackVersion + ".zip")
                 val defaultPackUrl =
                     URL("https://github.com/PolyhedralDev/DefaultMetapack/releases/download/" + Versions.Terra.defaultConfig + "/default.zip")
                 downloadPack(overworldPackUrl, project)
                 downloadPack(reimagENDPackUrl, project)
                 downloadPack(tartarusPackUrl, project)
+                downloadPack(origenPackUrl, project)
                 downloadPack(defaultPackUrl, project, true)
             } catch (_: Exception) {
             }

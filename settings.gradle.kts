@@ -16,16 +16,17 @@ includeImmediateChildren(file("common/implementation"), "implementation")
 
 includeImmediateChildren(file("common/addons"), "addon")
 
-includeImmediateChildren(file("platforms"), "platform")
-
-includeImmediateChildren(file("platforms/bukkit/nms"), "Bukkit NMS")
-
-include(":platforms:bukkit:common")
-include(":platforms:minestom:example")
+// Limit platform build graph to NeoForge integration for this worktree.
+include(":platforms:mixin-common")
+include(":platforms:mixin-lifecycle")
+include(":platforms:neoforge")
 
 pluginManagement {
     repositories {
         gradlePluginPortal()
+        maven("https://maven.neoforged.net/releases") {
+            name = "NeoForge"
+        }
         maven("https://maven.solo-studios.ca/releases") {
             name = "Solo Studios"
         }

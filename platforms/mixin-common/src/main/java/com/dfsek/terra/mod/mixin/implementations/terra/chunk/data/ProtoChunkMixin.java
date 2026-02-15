@@ -17,52 +17,30 @@
 
 package com.dfsek.terra.mod.mixin.implementations.terra.chunk.data;
 
-import net.minecraft.command.argument.BlockStateArgument;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.HeightLimitView;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.ChunkSection;
-import net.minecraft.world.chunk.PalettesFactory;
-import net.minecraft.world.chunk.UpgradeData;
-import net.minecraft.world.gen.chunk.BlendingData;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Implements;
 import org.spongepowered.asm.mixin.Interface;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
 import com.dfsek.terra.api.block.state.BlockState;
-import com.dfsek.terra.api.block.state.BlockStateExtended;
 import com.dfsek.terra.api.world.chunk.generation.ProtoChunk;
 
 
 @Mixin(net.minecraft.world.chunk.ProtoChunk.class)
 @Implements(@Interface(iface = ProtoChunk.class, prefix = "terra$"))
-public abstract class ProtoChunkMixin extends Chunk {
-    public ProtoChunkMixin(ChunkPos pos, UpgradeData upgradeData, HeightLimitView heightLimitView, PalettesFactory palettesFactory,
-                           long inhabitedTime, @Nullable ChunkSection[] sectionArray, @Nullable BlendingData blendingData) {
-        super(pos, upgradeData, heightLimitView, palettesFactory, inhabitedTime, sectionArray, blendingData);
-    }
-
+public abstract class ProtoChunkMixin {
     @Shadow
     public abstract net.minecraft.block.BlockState getBlockState(BlockPos pos);
 
     @Shadow
     public abstract HeightLimitView getHeightLimitView();
 
-    public void terra$setBlock(int x, int y, int z, @NotNull BlockState data) {
-        BlockPos blockPos = new BlockPos(x, y, z);
-        boolean isExtended = data.isExtended() && data.getClass().equals(BlockStateArgument.class);
-        if(isExtended) {
-            BlockStateExtended blockStateExtended = (BlockStateExtended) data;
-
-            net.minecraft.block.BlockState blockState = (net.minecraft.block.BlockState) blockStateExtended.getState();
-            this.setBlockState(blockPos, blockState, 0);
-        } else {
-            this.setBlockState(blockPos, (net.minecraft.block.BlockState) data, 0);
-        }
+    public void terra$setBlock(int x, int y, int z, @NotNull BlockState blockState) {
+        ((net.minecraft.world.chunk.Chunk) (Object) this).setBlockState(new BlockPos(x, y, z), (net.minecraft.block.BlockState) blockState,
+            false);
     }
 
     public @NotNull BlockState terra$getBlock(int x, int y, int z) {
@@ -70,6 +48,6 @@ public abstract class ProtoChunkMixin extends Chunk {
     }
 
     public int terra$getMaxHeight() {
-        return getHeightLimitView().getTopYInclusive();
+        return getHeightLimitView().getTopY();
     }
 }

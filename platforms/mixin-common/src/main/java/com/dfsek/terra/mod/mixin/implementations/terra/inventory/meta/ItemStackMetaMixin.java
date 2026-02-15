@@ -19,6 +19,9 @@ package com.dfsek.terra.mod.mixin.implementations.terra.inventory.meta;
 
 import net.minecraft.component.type.ItemEnchantmentsComponent;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtList;
+import net.minecraft.registry.Registries;
 import net.minecraft.registry.entry.RegistryEntry;
 import org.spongepowered.asm.mixin.Implements;
 import org.spongepowered.asm.mixin.Interface;
@@ -46,8 +49,7 @@ public abstract class ItemStackMetaMixin {
     @Shadow
     public abstract void addEnchantment(RegistryEntry<net.minecraft.enchantment.Enchantment> enchantment, int level);
 
-    public void terra$addEnchantment(Enchantment enchantment, int level) {
-        ;
+    public void terra$addEnchantment(Enchantment enchantment, int level) { ;
         addEnchantment(RegistryEntry.of((net.minecraft.enchantment.Enchantment) (Object) enchantment), level);
     }
 

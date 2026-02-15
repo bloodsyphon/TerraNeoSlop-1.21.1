@@ -5,6 +5,7 @@ import com.dfsek.tectonic.api.config.template.annotations.Value;
 import com.dfsek.tectonic.api.config.template.object.ObjectTemplate;
 import net.minecraft.entity.SpawnGroup;
 import net.minecraft.world.biome.SpawnSettings;
+import net.minecraft.world.biome.SpawnSettings.SpawnEntry;
 
 import java.util.List;
 
@@ -27,8 +28,8 @@ public class SpawnSettingsTemplate implements ObjectTemplate<SpawnSettings> {
         SpawnSettings.Builder builder = new SpawnSettings.Builder();
         for(SpawnTypeConfig spawn : spawns) {
             SpawnGroup group = spawn.getGroup();
-            for(SpawnEntryConfig entry : spawn.getEntries()) {
-                builder.spawn(group, entry.getWeight(), entry.getSpawnEntry());
+            for (SpawnEntry entry : spawn.getEntry()) {
+                builder.spawn(group, entry);
             }
         }
         for(SpawnCostConfig cost : costs) {

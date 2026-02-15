@@ -12,6 +12,8 @@
         "lifecycle.RegistryLoaderMixin",
         "lifecycle.SaveLoadingMixin"
     ],
+    "client": [
+    ],
     "server": [
     ],
     "injectors": {
