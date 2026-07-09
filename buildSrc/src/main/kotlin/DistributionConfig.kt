@@ -63,6 +63,13 @@ fun Project.configureDistribution() {
                 downloadPack(reimagENDPackUrl, project)
                 downloadPack(tartarusPackUrl, project)
                 downloadPack(defaultPackUrl, project, true)
+
+                val origenPack = rootProject.file("bundled-packs/origen-v2.2.1.zip")
+                if (origenPack.exists()) {
+                    val origenDest = file("${buildDir}/resources/main/packs/origen-v2.2.1.zip")
+                    origenDest.parentFile.mkdirs()
+                    origenPack.copyTo(origenDest, overwrite = true)
+                }
             } catch (_: Exception) {
             }
         }

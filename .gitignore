@@ -47,6 +47,8 @@ gradle-app.setting
 *.nar
 *.ear
 *.zip
+!bundled-packs/
+!bundled-packs/*.zip
 *.tar.gz
 *.rar
 

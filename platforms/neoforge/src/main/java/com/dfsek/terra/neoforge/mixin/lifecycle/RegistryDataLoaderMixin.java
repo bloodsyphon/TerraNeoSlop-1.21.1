@@ -32,10 +32,28 @@ public class RegistryDataLoaderMixin {
     @Inject(
         method = "lambda$load$2(Ljava/util/List;Ljava/util/Map;Ljava/lang/Void;)Lnet/minecraft/core/RegistryAccess$Frozen;",
         at = @At("HEAD"),
+        require = 0,
         remap = false
     )
     private static void beforeFreeze(List<RegistryLoadTask<?>> loadTasks, Map<ResourceKey<?>, Exception> loadingErrors,
                                      Void ignored, CallbackInfoReturnable<RegistryAccess.Frozen> cir) {
+        terra$beforeFreeze(loadTasks);
+    }
+
+    @Inject(
+        method = "lambda$load$2(ZLjava/util/List;Ljava/util/Map;Ljava/lang/Void;)Lnet/minecraft/core/RegistryAccess$Frozen;",
+        at = @At("HEAD"),
+        require = 0,
+        remap = false
+    )
+    private static void beforeNeoForgeFreeze(boolean includeGameTests, List<RegistryLoadTask<?>> loadTasks,
+                                             Map<ResourceKey<?>, Exception> loadingErrors, Void ignored,
+                                             CallbackInfoReturnable<RegistryAccess.Frozen> cir) {
+        terra$beforeFreeze(loadTasks);
+    }
+
+    @Unique
+    private static void terra$beforeFreeze(List<RegistryLoadTask<?>> loadTasks) {
         if(loadTasks.stream().noneMatch(task -> terra$registry(task).key().equals(Registries.BIOME))) {
             return;
         }
