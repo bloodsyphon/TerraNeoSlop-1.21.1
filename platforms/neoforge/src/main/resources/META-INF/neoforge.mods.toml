@@ -7,7 +7,7 @@ issueTrackerURL = "https://github.com/PolyhedralDev/Terra/issues"
 modId = "terra"
 version = "@VERSION@"
 displayName = "Terra"
-credits = "Includes modified code from Origen by Rearth (https://github.com/Rearth/Origen), licensed under CC-BY-4.0."
+credits = "Includes Origen v2.2.1 by Rearth; bundled pack also credits Astrash, Sancires, Aureus, and Rearth. Modified for Terra 7/NeoForge 26.2 compatibility. Source: https://github.com/Rearth/Origen. License: CC BY 4.0, https://creativecommons.org/licenses/by/4.0/."
 description = "@DESCRIPTION@"
 
 [[dependencies.terra]]

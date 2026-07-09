@@ -72,6 +72,9 @@ fun Project.configureCompilation() {
     tasks.withType<Jar> {
         archiveBaseName.set("Terra-${archiveBaseName.get()}")
         from("../LICENSE", "../../LICENSE")
+        from(rootProject.file("THIRD_PARTY_NOTICES")) {
+            into("META-INF")
+        }
     }
     
     tasks.register<Jar>("sourcesJar") {

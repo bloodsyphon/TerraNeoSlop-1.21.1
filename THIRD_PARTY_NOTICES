@@ -2,9 +2,15 @@ This project includes modified code from the following third-party works:
 
 --------------------------------------------------------------------------------
 
-Origen
-  Author: Rearth
+Origen v2.2.1
+  Creator / maintainer: Rearth
+  Authors declared by the bundled pack: Astrash, Sancires, Aureus, Rearth
   Source: https://github.com/Rearth/Origen
-  License: Creative Commons Attribution 4.0 International (CC-BY-4.0)
+  License: Creative Commons Attribution 4.0 International (CC BY 4.0)
            https://creativecommons.org/licenses/by/4.0/
-  Changes: Modified and repackaged as a bundled dependency.
+  Bundled material: bundled-packs/origen-v2.2.1.zip
+  Changes: Modified pack.yml to use the Terra 7 addon id
+           "biome-provider-pipeline" with version range "2.+" instead of the
+           older "biome-provider-pipeline-v2" dependency, then repackaged and
+           bundled with TerraNeoSlop for NeoForge 26.2 compatibility.
+  No endorsement by the Origen authors is implied.
