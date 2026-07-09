@@ -1,15 +1,14 @@
 package com.dfsek.terra.neoforge.mixin.fix;
 
-import net.minecraft.world.gen.structure.NetherFossilStructure;
-import net.minecraft.world.gen.structure.Structure.Context;
-import net.minecraft.world.gen.structure.Structure.StructurePosition;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Optional;
-
+import net.minecraft.world.level.levelgen.structure.Structure.GenerationContext;
+import net.minecraft.world.level.levelgen.structure.Structure.GenerationStub;
+import net.minecraft.world.level.levelgen.structure.structures.NetherFossilStructure;
 import com.dfsek.terra.mod.generation.MinecraftChunkGeneratorWrapper;
 
 
@@ -21,8 +20,8 @@ import com.dfsek.terra.mod.generation.MinecraftChunkGeneratorWrapper;
  */
 @Mixin(NetherFossilStructure.class)
 public class NetherFossilOptimization {
-    @Inject(method = "getStructurePosition", at = @At("HEAD"), cancellable = true)
-    public void injectFossilPositions(Context context, CallbackInfoReturnable<Optional<StructurePosition>> cir) {
+    @Inject(method = "findGenerationPoint", at = @At("HEAD"), cancellable = true, remap = false)
+    public void injectFossilPositions(GenerationContext context, CallbackInfoReturnable<Optional<GenerationStub>> cir) {
         if(context.chunkGenerator() instanceof MinecraftChunkGeneratorWrapper) {
             cir.setReturnValue(Optional.empty());
         }

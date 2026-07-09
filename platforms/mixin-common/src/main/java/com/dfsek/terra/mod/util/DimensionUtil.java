@@ -1,13 +1,10 @@
 package com.dfsek.terra.mod.util;
 
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.world.dimension.DimensionType;
-import net.minecraft.world.dimension.DimensionType.MonsterSettings;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.OptionalLong;
-
+import net.minecraft.world.level.dimension.DimensionType;
+import net.minecraft.world.level.dimension.DimensionType.MonsterSettings;
 import com.dfsek.terra.mod.ModPlatform;
 import com.dfsek.terra.mod.config.MonsterSettingsConfig;
 import com.dfsek.terra.mod.config.VanillaWorldProperties;

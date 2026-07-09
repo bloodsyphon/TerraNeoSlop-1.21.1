@@ -18,11 +18,6 @@
 package com.dfsek.terra.neoforge.mixin.implementations.terra.inventory.meta;
 
 import com.dfsek.terra.mod.CommonPlatform;
-
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.registry.entry.RegistryEntryList;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Implements;
 import org.spongepowered.asm.mixin.Interface;
@@ -30,29 +25,31 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
 import java.util.Objects;
-
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderSet;
+import net.minecraft.world.item.enchantment.Enchantment;
 import com.dfsek.terra.api.inventory.ItemStack;
 
-import static net.minecraft.enchantment.Enchantment.canBeCombined;
+import static net.minecraft.world.item.enchantment.Enchantment.areCompatible;
 
 
 @Mixin(Enchantment.class)
 @Implements(@Interface(iface = com.dfsek.terra.api.inventory.item.Enchantment.class, prefix = "terra$"))
 public abstract class EnchantmentMixin {
     @Shadow
-    public abstract boolean isAcceptableItem(net.minecraft.item.ItemStack stack);
+    public abstract boolean canEnchant(net.minecraft.world.item.ItemStack stack);
 
     @Shadow
     @Final
-    private RegistryEntryList<Enchantment> exclusiveSet;
+    private HolderSet<Enchantment> exclusiveSet;
 
     @SuppressWarnings("ConstantConditions")
     public boolean terra$canEnchantItem(ItemStack itemStack) {
-        return isAcceptableItem((net.minecraft.item.ItemStack) (Object) itemStack);
+        return canEnchant((net.minecraft.world.item.ItemStack) (Object) itemStack);
     }
 
     public boolean terra$conflictsWith(com.dfsek.terra.api.inventory.item.Enchantment other) {
-        return canBeCombined(RegistryEntry.of((Enchantment) (Object) this), RegistryEntry.of((Enchantment) (Object) other));
+        return areCompatible(Holder.direct((Enchantment) (Object) this), Holder.direct((Enchantment) (Object) other));
     }
 
     public String terra$getID() {

@@ -18,9 +18,6 @@
 package com.dfsek.terra.neoforge.mixin.implementations.terra.entity;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Implements;
 import org.spongepowered.asm.mixin.Interface;
@@ -28,27 +25,29 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
 import java.util.Optional;
-
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import com.dfsek.terra.api.command.CommandSender;
 import com.dfsek.terra.api.entity.Entity;
 import com.dfsek.terra.api.entity.Player;
 
 
-@Mixin(ServerCommandSource.class)
+@Mixin(CommandSourceStack.class)
 @Implements(@Interface(iface = CommandSender.class, prefix = "terra$"))
 public abstract class ServerCommandSourceMixin {
     @Shadow
-    public abstract ServerPlayerEntity getPlayer() throws CommandSyntaxException;
+    public abstract ServerPlayer getPlayer() throws CommandSyntaxException;
 
     @Shadow
     @Nullable
-    public abstract net.minecraft.entity.@Nullable Entity getEntity();
+    public abstract net.minecraft.world.entity.@Nullable Entity getEntity();
 
     @Shadow
-    public abstract void sendMessage(Text message);
+    public abstract void sendSystemMessage(Component message);
 
     public void terra$sendMessage(String message) {
-        sendMessage(Text.literal(message));
+        sendSystemMessage(Component.literal(message));
     }
 
     @Nullable

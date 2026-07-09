@@ -15,7 +15,7 @@ import java.lang.reflect.Method;
 import com.dfsek.terra.api.block.state.properties.Property;
 
 
-@Mixin(net.minecraft.state.property.Property.class)
+@Mixin(net.minecraft.world.level.block.state.properties.Property.class)
 @Implements(@Interface(iface = Property.class, prefix = "terra$", remap = Remap.NONE))
 public abstract class PropertyMixin<T> {
     @Intrinsic

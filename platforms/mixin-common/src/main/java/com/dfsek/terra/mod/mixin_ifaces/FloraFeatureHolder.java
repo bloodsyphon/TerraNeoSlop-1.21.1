@@ -1,8 +1,7 @@
 package com.dfsek.terra.mod.mixin_ifaces;
 
-import net.minecraft.world.gen.feature.ConfiguredFeature;
-
 import java.util.List;
+import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 
 
 public interface FloraFeatureHolder {

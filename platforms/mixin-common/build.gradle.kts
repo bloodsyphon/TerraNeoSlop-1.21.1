@@ -1,14 +1,5 @@
 plugins {
-    id("dev.architectury.loom") version Versions.Mod.architecuryLoom
-    id("architectury-plugin") version Versions.Mod.architecturyPlugin
-}
-
-loom {
-    accessWidenerPath.set(file("src/main/resources/terra.accesswidener"))
-
-    mixin {
-        defaultRefmapName.set("terra.common.refmap.json")
-    }
+    id("net.neoforged.moddev") version Versions.NeoForge.modDevGradle
 }
 
 dependencies {
@@ -16,14 +7,8 @@ dependencies {
 
     compileOnly("net.fabricmc:sponge-mixin:${Versions.Mod.mixin}")
     annotationProcessor("net.fabricmc:sponge-mixin:${Versions.Mod.mixin}")
-    annotationProcessor("dev.architectury:architectury-loom:${Versions.Mod.architecuryLoom}")
-
-    minecraft("com.mojang:minecraft:${Versions.Mod.minecraft}")
-    mappings("net.fabricmc:yarn:${Versions.Mod.yarn}:v2")
 }
 
-architectury {
-    common("fabric")
-    minecraft = Versions.Mod.minecraft
+neoForge {
+    neoFormVersion = Versions.NeoForge.neoForm
 }
-

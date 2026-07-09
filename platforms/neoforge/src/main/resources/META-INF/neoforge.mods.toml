@@ -13,14 +13,14 @@ description = "@DESCRIPTION@"
 [[dependencies.terra]]
 modId = "neoforge"
 mandatory = true
-versionRange = "[21.1,)"
+versionRange = "[26.2,)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.terra]]
 modId = "minecraft"
 mandatory = true
-versionRange = "[1.21.1,)"
+versionRange = "[26.2,)"
 ordering = "NONE"
 side = "BOTH"
 

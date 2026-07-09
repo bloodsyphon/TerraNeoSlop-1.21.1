@@ -5,14 +5,14 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import net.minecraft.SharedConstants;
-import net.minecraft.resource.DirectoryResourcePack;
-import net.minecraft.resource.ResourcePack;
-import net.minecraft.resource.ResourcePackInfo;
-import net.minecraft.resource.ResourcePackPosition;
-import net.minecraft.resource.ResourcePackProfile;
-import net.minecraft.resource.ResourcePackSource;
-import net.minecraft.resource.ResourceType;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.packs.PackLocationInfo;
+import net.minecraft.server.packs.PackResources;
+import net.minecraft.server.packs.PackSelectionConfig;
+import net.minecraft.server.packs.PackType;
+import net.minecraft.server.packs.PathPackResources;
+import net.minecraft.server.packs.repository.Pack;
+import net.minecraft.server.packs.repository.PackSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +37,7 @@ import com.dfsek.terra.mod.config.VanillaWorldProperties;
 final class NeoForgeGeneratedPackManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(NeoForgeGeneratedPackManager.class);
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-    private static final Identifier PACK_ID = Identifier.of("terra", "generated_world_presets");
+    private static final Identifier PACK_ID = Identifier.fromNamespaceAndPath("terra", "generated_world_presets");
     private static final String PACK_TITLE = "Terra Generated World Presets";
     private static final String NORMAL_PRESET_TAG = "normal";
     private static final String EXTENDED_PRESET_TAG = "extended";
@@ -45,7 +45,7 @@ final class NeoForgeGeneratedPackManager {
     private NeoForgeGeneratedPackManager() {
     }
 
-    static Optional<ResourcePackProfile> createPack(NeoForgePlatform platform) {
+    static Optional<Pack> createPack(NeoForgePlatform platform) {
         Path packRoot = platform.getDataFolder().toPath().resolve("generated-datapacks").resolve("world-presets");
         LOGGER.info("Generating Terra world preset datapack at {}", packRoot);
         try {
@@ -55,30 +55,30 @@ final class NeoForgeGeneratedPackManager {
             return Optional.empty();
         }
 
-        ResourcePackInfo locationInfo = new ResourcePackInfo(
+        PackLocationInfo locationInfo = new PackLocationInfo(
             "mod/" + PACK_ID,
-            net.minecraft.text.Text.literal(PACK_TITLE),
-            ResourcePackSource.BUILTIN,
+            net.minecraft.network.chat.Component.literal(PACK_TITLE),
+            PackSource.BUILT_IN,
             Optional.empty()
         );
 
-        ResourcePackProfile.PackFactory supplier = new ResourcePackProfile.PackFactory() {
+        Pack.ResourcesSupplier supplier = new Pack.ResourcesSupplier() {
             @Override
-            public ResourcePack open(ResourcePackInfo info) {
-                return new DirectoryResourcePack(info, packRoot);
+            public PackResources openPrimary(PackLocationInfo info) {
+                return new PathPackResources(info, packRoot);
             }
 
             @Override
-            public ResourcePack openWithOverlays(ResourcePackInfo info, ResourcePackProfile.Metadata metadata) {
-                return new DirectoryResourcePack(info, packRoot);
+            public PackResources openFull(PackLocationInfo info, Pack.Metadata metadata) {
+                return new PathPackResources(info, packRoot);
             }
         };
 
-        ResourcePackProfile pack = ResourcePackProfile.create(
+        Pack pack = Pack.readMetaAndCreate(
             locationInfo,
             supplier,
-            ResourceType.SERVER_DATA,
-            new ResourcePackPosition(true, ResourcePackProfile.InsertionPosition.TOP, false)
+            PackType.SERVER_DATA,
+            new PackSelectionConfig(true, Pack.Position.TOP, false)
         );
 
         if(pack == null) {
@@ -129,7 +129,7 @@ final class NeoForgeGeneratedPackManager {
     private static void writePackMeta(Path packRoot) throws IOException {
         JsonObject root = new JsonObject();
         JsonObject pack = new JsonObject();
-        int dataPackVersion = SharedConstants.DATA_PACK_VERSION;
+        int dataPackVersion = SharedConstants.DATA_PACK_FORMAT_MAJOR;
         pack.addProperty("pack_format", dataPackVersion);
         pack.addProperty("min_format", dataPackVersion);
         pack.addProperty("max_format", dataPackVersion);
@@ -208,7 +208,7 @@ final class NeoForgeGeneratedPackManager {
     }
 
     private static JsonObject createTerraGenerator(ConfigPack pack, VanillaWorldProperties properties) {
-        Identifier packId = Identifier.of(pack.getNamespace(), pack.getID());
+        Identifier packId = Identifier.fromNamespaceAndPath(pack.getNamespace(), pack.getID());
 
         GenerationDefaults defaults = GenerationDefaults.forVanillaGeneration(properties.getVanillaGeneration());
         ConstantRange range = properties.getHeight();
@@ -352,7 +352,7 @@ final class NeoForgeGeneratedPackManager {
     }
 
     private static Identifier createPresetId(String id, String namespace) {
-        return Identifier.of("terra", id.toLowerCase() + "/" + namespace.toLowerCase());
+        return Identifier.fromNamespaceAndPath("terra", id.toLowerCase() + "/" + namespace.toLowerCase());
     }
 
     private static void deleteDirectory(Path root) throws IOException {

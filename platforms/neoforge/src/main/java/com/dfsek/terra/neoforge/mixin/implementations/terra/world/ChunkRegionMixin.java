@@ -18,19 +18,6 @@
 package com.dfsek.terra.neoforge.mixin.implementations.terra.world;
 
 import com.dfsek.terra.neoforge.mixin.invoke.FluidBlockInvoker;
-
-import net.minecraft.entity.SpawnReason;
-import net.minecraft.block.FluidBlock;
-import net.minecraft.fluid.Fluid;
-import net.minecraft.util.collection.BoundedRegionArray;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.ChunkRegion;
-import net.minecraft.world.WorldAccess;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.ChunkGenerationStep;
-import net.minecraft.world.chunk.ChunkStatus;
-import net.minecraft.world.tick.MultiTickScheduler;
-import net.minecraft.world.tick.OrderedTick;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Implements;
 import org.spongepowered.asm.mixin.Interface;
@@ -44,7 +31,17 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.List;
-
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.WorldGenRegion;
+import net.minecraft.util.StaticCache2D;
+import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.block.LiquidBlock;
+import net.minecraft.world.level.chunk.ChunkAccess;
+import net.minecraft.world.level.chunk.status.ChunkStep;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.ticks.ScheduledTick;
+import net.minecraft.world.ticks.WorldGenTickAccess;
 import com.dfsek.terra.api.block.entity.BlockEntity;
 import com.dfsek.terra.api.block.state.BlockState;
 import com.dfsek.terra.api.config.ConfigPack;
@@ -58,7 +55,7 @@ import com.dfsek.terra.mod.generation.MinecraftChunkGeneratorWrapper;
 import com.dfsek.terra.mod.util.MinecraftUtil;
 
 
-@Mixin(ChunkRegion.class)
+@Mixin(WorldGenRegion.class)
 @Implements(@Interface(iface = ProtoWorld.class, prefix = "terraWorld$"))
 public abstract class ChunkRegionMixin {
     private ConfigPack terra$config;
@@ -66,26 +63,26 @@ public abstract class ChunkRegionMixin {
 
     @Shadow
     @Final
-    private net.minecraft.server.world.ServerWorld world;
+    private net.minecraft.server.level.ServerLevel level;
 
     @Shadow
     @Final
     private long seed;
     @Shadow
     @Final
-    private Chunk centerPos;
+    private ChunkAccess center;
 
     @Shadow
     @Final
-    private MultiTickScheduler<Fluid> fluidTickScheduler;
+    private WorldGenTickAccess<Fluid> fluidTicks;
 
 
     @Inject(at = @At("RETURN"),
-            method = "<init>(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/util/collection/BoundedRegionArray;Lnet/minecraft/world/chunk/ChunkGenerationStep;Lnet/minecraft/world/chunk/Chunk;)V",
+            method = "<init>(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/util/StaticCache2D;Lnet/minecraft/world/level/chunk/status/ChunkStep;Lnet/minecraft/world/level/chunk/ChunkAccess;)V",
             require = 0,
             remap = false)
-    private void injectConstructorLocal(net.minecraft.server.world.ServerWorld world, BoundedRegionArray<?> chunks,
-                                        ChunkGenerationStep generationStep, Chunk centerPos, CallbackInfo ci) {
+    private void injectConstructorLocal(net.minecraft.server.level.ServerLevel world, StaticCache2D<?> chunks,
+                                        ChunkStep generationStep, ChunkAccess centerPos, CallbackInfo ci) {
         terra$setConfigFromWorld(world);
     }
 
@@ -107,11 +104,11 @@ public abstract class ChunkRegionMixin {
     @Intrinsic(displace = true)
     public void terraWorld$setBlockState(int x, int y, int z, BlockState data, boolean physics) {
         BlockPos pos = new BlockPos(x, y, z);
-        ((ChunkRegion) (Object) this).setBlockState(pos, (net.minecraft.block.BlockState) data, physics ? 3 : 1042);
-        if(physics && ((net.minecraft.block.BlockState) data).getBlock() instanceof FluidBlock) {
-            fluidTickScheduler.scheduleTick(
-                OrderedTick.create((((FluidBlockInvoker) ((net.minecraft.block.BlockState) data).getBlock())).invokeGetFluidState(
-                    (net.minecraft.block.BlockState) data).getFluid(), pos));
+        ((WorldGenRegion) (Object) this).setBlock(pos, (net.minecraft.world.level.block.state.BlockState) data, physics ? 3 : 1042);
+        if(physics && ((net.minecraft.world.level.block.state.BlockState) data).getBlock() instanceof LiquidBlock) {
+            fluidTicks.schedule(
+                ScheduledTick.probe((((FluidBlockInvoker) ((net.minecraft.world.level.block.state.BlockState) data).getBlock())).invokeGetFluidState(
+                    (net.minecraft.world.level.block.state.BlockState) data).getType(), pos));
         }
     }
 
@@ -121,25 +118,25 @@ public abstract class ChunkRegionMixin {
     }
 
     public int terraWorld$getMaxHeight() {
-        return world.getTopYInclusive();
+        return level.getMaxY();
     }
 
     @Intrinsic(displace = true)
     public BlockState terraWorld$getBlockState(int x, int y, int z) {
         BlockPos pos = new BlockPos(x, y, z);
-        return (BlockState) ((ChunkRegion) (Object) this).getBlockState(pos);
+        return (BlockState) ((WorldGenRegion) (Object) this).getBlockState(pos);
     }
 
     public BlockEntity terraWorld$getBlockEntity(int x, int y, int z) {
-        return MinecraftUtil.createBlockEntity((WorldAccess) this, new BlockPos(x, y, z));
+        return MinecraftUtil.createBlockEntity((LevelAccessor) this, new BlockPos(x, y, z));
     }
 
     public int terraWorld$getMinHeight() {
-        return world.getBottomY();
+        return level.getMinY();
     }
 
     public ChunkGenerator terraWorld$getGenerator() {
-        return ((MinecraftChunkGeneratorWrapper) world.getChunkManager().getChunkGenerator()).getHandle();
+        return ((MinecraftChunkGeneratorWrapper) level.getChunkSource().getGenerator()).getHandle();
     }
 
     public BiomeProvider terraWorld$getBiomeProvider() {
@@ -147,22 +144,22 @@ public abstract class ChunkRegionMixin {
     }
 
     public Entity terraWorld$spawnEntity(double x, double y, double z, EntityType entityType) {
-        net.minecraft.entity.Entity entity = ((net.minecraft.entity.EntityType<?>) entityType).create(world, SpawnReason.CHUNK_GENERATION);
-        entity.setPos(x, y, z);
-        ((ChunkRegion) (Object) this).spawnEntity(entity);
+        net.minecraft.world.entity.Entity entity = ((net.minecraft.world.entity.EntityType<?>) entityType).create(level, EntitySpawnReason.CHUNK_GENERATION);
+        entity.setPosRaw(x, y, z);
+        ((WorldGenRegion) (Object) this).addFreshEntity(entity);
         return (Entity) entity;
     }
 
     public int terraWorld$centerChunkX() {
-        return centerPos.getPos().x;
+        return center.getPos().x();
     }
 
     public int terraWorld$centerChunkZ() {
-        return centerPos.getPos().z;
+        return center.getPos().z();
     }
 
     public ServerWorld terraWorld$getWorld() {
-        return (ServerWorld) world;
+        return (ServerWorld) level;
     }
 
     public ConfigPack terraWorld$getPack() {

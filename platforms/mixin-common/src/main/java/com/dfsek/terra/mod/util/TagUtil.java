@@ -1,12 +1,5 @@
 package com.dfsek.terra.mod.util;
 
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.registry.tag.TagGroupLoader.RegistryTags;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.registry.tag.WorldPresetTags;
-import net.minecraft.world.biome.Biome;
-import net.minecraft.world.gen.WorldPreset;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,6 +8,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import net.minecraft.core.Holder;
+import net.minecraft.core.Registry;
+import net.minecraft.tags.TagKey;
+import net.minecraft.tags.TagLoader.LoadResult;
+import net.minecraft.tags.WorldPresetTags;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.levelgen.presets.WorldPreset;
 
 
 public final class TagUtil {
@@ -24,14 +24,14 @@ public final class TagUtil {
 
     }
 
-    private static <T> Map<TagKey<T>, List<RegistryEntry<T>>> tagsToMutableMap(Registry<T> registry) {
+    private static <T> Map<TagKey<T>, List<Holder<T>>> tagsToMutableMap(Registry<T> registry) {
         try {
-            return registry.streamTags().collect(HashMap::new,
-                (map, tag) -> map.put(tag.getTag(), tag.stream().collect(Collectors.toList())),
+            return registry.getTags().collect(HashMap::new,
+                (map, tag) -> map.put(tag.key(), tag.stream().collect(Collectors.toList())),
                 HashMap::putAll);
         } catch(IllegalStateException e) {
             if("Tags not bound".equals(e.getMessage())) {
-                logger.warn("Tags were not bound yet for registry {}; starting from an empty tag set.", registry.getKey().getValue());
+                logger.warn("Tags were not bound yet for registry {}; starting from an empty tag set.", registry.key().identifier());
                 return new HashMap<>();
             }
             throw e;
@@ -40,7 +40,7 @@ public final class TagUtil {
 
     public static void registerWorldPresetTags(Registry<WorldPreset> registry) {
         logger.info("Registering Preset Tags.");
-        Map<TagKey<WorldPreset>, List<RegistryEntry<WorldPreset>>> collect = tagsToMutableMap(registry);
+        Map<TagKey<WorldPreset>, List<Holder<WorldPreset>>> collect = tagsToMutableMap(registry);
 
         PresetUtil
             .getPresets()
@@ -55,20 +55,20 @@ public final class TagUtil {
                     },
                     () -> logger.error("Preset {} does not exist!", pair.getLeft())));
 
-        registry.startTagReload(new RegistryTags<>(registry.getKey(), collect)).apply();
+        registry.prepareTagReload(new LoadResult<>(registry.key(), collect)).apply();
 
 
         if(logger.isDebugEnabled()) {
-            registry.streamEntries()
-                .map(e -> e.registryKey().getValue() + ": " +
-                          e.streamTags().reduce("", (s, t) -> t.id() + ", " + s, String::concat))
+            registry.listElements()
+                .map(e -> e.key().identifier() + ": " +
+                          e.tags().reduce("", (s, t) -> t.location() + ", " + s, String::concat))
                 .forEach(logger::debug);
         }
     }
 
     public static void registerBiomeTags(Registry<Biome> registry) {
         logger.info("Doing biome tag garbage....");
-        Map<TagKey<Biome>, List<RegistryEntry<Biome>>> collect = tagsToMutableMap(registry);
+        Map<TagKey<Biome>, List<Holder<Biome>>> collect = tagsToMutableMap(registry);
 
         BiomeUtil
             .getTerraBiomeMap()
@@ -82,18 +82,18 @@ public final class TagUtil {
                                 .ifPresentOrElse(
                                     terra -> {
                                         logger.debug(
-                                            vanilla.getKey()
+                                            vanilla.unwrapKey()
                                                 .orElseThrow()
-                                                .getValue() +
+                                                .identifier() +
                                             " (vanilla for " +
-                                            terra.getKey()
+                                            terra.unwrapKey()
                                                 .orElseThrow()
-                                                .getValue() +
+                                                .identifier() +
                                             ": " +
-                                            vanilla.streamTags()
+                                            vanilla.tags()
                                                 .toList());
 
-                                        vanilla.streamTags()
+                                        vanilla.tags()
                                             .forEach(
                                                 tag -> collect
                                                     .computeIfAbsent(
@@ -106,12 +106,12 @@ public final class TagUtil {
                                         tb))),
                         () -> logger.error("No vanilla biome: {}", vb)));
 
-        registry.startTagReload(new RegistryTags<>(registry.getKey(), collect)).apply();
+        registry.prepareTagReload(new LoadResult<>(registry.key(), collect)).apply();
 
         if(logger.isDebugEnabled()) {
-            registry.streamEntries()
-                .map(e -> e.registryKey().getValue() + ": " +
-                          e.streamTags().reduce("", (s, t) -> t.id() + ", " + s, String::concat))
+            registry.listElements()
+                .map(e -> e.key().identifier() + ": " +
+                          e.tags().reduce("", (s, t) -> t.location() + ", " + s, String::concat))
                 .forEach(logger::debug);
         }
     }

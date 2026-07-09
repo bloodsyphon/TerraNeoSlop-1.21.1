@@ -17,14 +17,14 @@
 
 package com.dfsek.terra.neoforge.mixin.access;
 
-import net.minecraft.world.WorldAccess;
-import net.minecraft.world.gen.StructureAccessor;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.StructureManager;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
 
-@Mixin(StructureAccessor.class)
+@Mixin(StructureManager.class)
 public interface StructureAccessorAccessor extends com.dfsek.terra.mod.mixin.access.StructureAccessorAccessor {
     @Accessor
-    WorldAccess getWorld();
+    LevelAccessor getLevel();
 }

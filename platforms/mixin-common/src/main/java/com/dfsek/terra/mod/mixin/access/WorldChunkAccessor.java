@@ -1,15 +1,15 @@
 package com.dfsek.terra.mod.mixin.access;
 
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.chunk.WorldChunk;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.chunk.LevelChunk;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Invoker;
 
 
-@Mixin(WorldChunk.class)
+@Mixin(LevelChunk.class)
 public interface WorldChunkAccessor {
-    @Invoker("loadBlockEntity")
-    public BlockEntity invokeLoadBlockEntity(BlockPos pos, NbtCompound nbt);
+    @Invoker("promotePendingBlockEntity")
+    public BlockEntity invokeLoadBlockEntity(BlockPos pos, CompoundTag nbt);
 }

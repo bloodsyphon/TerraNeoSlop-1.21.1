@@ -1,13 +1,12 @@
 package com.dfsek.terra.mod.implmentation;
 
-import net.minecraft.nbt.NbtCompound;
-
 import com.dfsek.terra.api.data.ExtendedData;
 import com.dfsek.terra.api.entity.EntityType;
 import com.dfsek.terra.api.entity.EntityTypeExtended;
+import net.minecraft.nbt.CompoundTag;
 
 
-public record MinecraftEntityTypeExtended(net.minecraft.entity.EntityType<?> entityType, NbtCompound nbtCompound)
+public record MinecraftEntityTypeExtended(net.minecraft.world.entity.EntityType<?> entityType, CompoundTag nbtCompound)
     implements EntityTypeExtended {
     @SuppressWarnings("DataFlowIssue")
     @Override
@@ -19,7 +18,7 @@ public record MinecraftEntityTypeExtended(net.minecraft.entity.EntityType<?> ent
     @Override
     public EntityTypeExtended setData(ExtendedData data) {
         return new MinecraftEntityTypeExtended(entityType,
-            data.getClass().equals(NbtCompound.class) ? ((NbtCompound) ((Object) data)) : null);
+            data.getClass().equals(CompoundTag.class) ? ((CompoundTag) ((Object) data)) : null);
     }
 
     @Override

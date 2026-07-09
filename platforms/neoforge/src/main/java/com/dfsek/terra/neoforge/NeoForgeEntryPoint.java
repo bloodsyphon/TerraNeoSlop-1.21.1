@@ -17,9 +17,9 @@
 
 package com.dfsek.terra.neoforge;
 
-import net.minecraft.Bootstrap;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.Bootstrap;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.registries.RegisterEvent;
@@ -31,13 +31,13 @@ public class NeoForgeEntryPoint {
     private static final NeoForgePlatform TERRA_PLUGIN = new NeoForgePlatform();
 
     public NeoForgeEntryPoint(IEventBus modEventBus) {
-        Bootstrap.initialize();
+        Bootstrap.bootStrap();
         modEventBus.addListener(this::onRegister);
     }
 
     private void onRegister(RegisterEvent event) {
-        event.register(RegistryKeys.CHUNK_GENERATOR, Identifier.of("terra:terra"), () -> Codecs.MINECRAFT_CHUNK_GENERATOR_WRAPPER);
-        event.register(RegistryKeys.BIOME_SOURCE, Identifier.of("terra:terra"), () -> Codecs.TERRA_BIOME_SOURCE);
+        event.register(Registries.CHUNK_GENERATOR, Identifier.parse("terra:terra"), () -> Codecs.MINECRAFT_CHUNK_GENERATOR_WRAPPER);
+        event.register(Registries.BIOME_SOURCE, Identifier.parse("terra:terra"), () -> Codecs.TERRA_BIOME_SOURCE);
     }
 
     public static NeoForgePlatform getPlatform() {

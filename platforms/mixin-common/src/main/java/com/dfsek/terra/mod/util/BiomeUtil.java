@@ -1,18 +1,14 @@
 package com.dfsek.terra.mod.util;
 
-import net.minecraft.registry.Registries;
-import net.minecraft.util.Identifier;
-import net.minecraft.world.biome.Biome;
-import net.minecraft.world.biome.Biome.Builder;
-import net.minecraft.world.biome.BiomeEffects;
-import net.minecraft.world.biome.GenerationSettings;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.Biome.BiomeBuilder;
+import net.minecraft.world.level.biome.BiomeGenerationSettings;
 import com.dfsek.terra.api.config.ConfigPack;
 import com.dfsek.terra.mod.config.VanillaBiomeProperties;
 
@@ -26,24 +22,24 @@ public class BiomeUtil {
         // For now, we'll use a simplified approach that just uses the vanilla biome's effects
         // TODO: Implement proper environment attributes support for custom biome properties
 
-        net.minecraft.world.biome.Biome.Builder builder = new Builder();
+        net.minecraft.world.level.biome.Biome.BiomeBuilder builder = new BiomeBuilder();
 
-        builder.precipitation(Objects.requireNonNullElse(vanillaBiomeProperties.getPrecipitation(), vanilla.hasPrecipitation()));
+        builder.hasPrecipitation(Objects.requireNonNullElse(vanillaBiomeProperties.getPrecipitation(), vanilla.hasPrecipitation()));
 
-        builder.temperature(Objects.requireNonNullElse(vanillaBiomeProperties.getTemperature(), vanilla.getTemperature()));
+        builder.temperature(Objects.requireNonNullElse(vanillaBiomeProperties.getTemperature(), vanilla.getBaseTemperature()));
 
         builder.downfall(Objects.requireNonNullElse(vanillaBiomeProperties.getDownfall(),
-            ReflectionAccess.getBiomeWeather(vanilla).downfall()));
+            ReflectionAccess.getBiomeDownfall(vanilla)));
 
-        builder.temperatureModifier(Objects.requireNonNullElse(vanillaBiomeProperties.getTemperatureModifier(),
-            ReflectionAccess.getBiomeWeather(vanilla).temperatureModifier()));
+        builder.temperatureAdjustment(Objects.requireNonNullElse(vanillaBiomeProperties.getTemperatureModifier(),
+            ReflectionAccess.getBiomeTemperatureModifier(vanilla)));
 
-        builder.spawnSettings(Objects.requireNonNullElse(vanillaBiomeProperties.getSpawnSettings(), vanilla.getSpawnSettings()));
+        builder.mobSpawnSettings(Objects.requireNonNullElse(vanillaBiomeProperties.getSpawnSettings(), vanilla.getMobSettings()));
 
         // Use vanilla biome's effects for now since the API has changed significantly
         return builder
-            .effects(vanilla.getEffects())
-            .generationSettings(new GenerationSettings.Builder().build())
+            .specialEffects(vanilla.getSpecialEffects())
+            .generationSettings(new BiomeGenerationSettings.PlainBuilder().build())
             .build();
     }
 

@@ -17,15 +17,10 @@
 
 package com.dfsek.terra.neoforge.mixin.implementations.terra.world;
 
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.WorldAccess;
 import org.spongepowered.asm.mixin.Implements;
 import org.spongepowered.asm.mixin.Interface;
 import org.spongepowered.asm.mixin.Intrinsic;
 import org.spongepowered.asm.mixin.Mixin;
-
-import net.minecraft.entity.SpawnReason;
-
 import com.dfsek.terra.api.block.entity.BlockEntity;
 import com.dfsek.terra.api.block.state.BlockState;
 import com.dfsek.terra.api.config.ConfigPack;
@@ -38,65 +33,68 @@ import com.dfsek.terra.api.world.chunk.generation.ChunkGenerator;
 import com.dfsek.terra.mod.generation.MinecraftChunkGeneratorWrapper;
 import com.dfsek.terra.mod.generation.TerraBiomeSource;
 import com.dfsek.terra.mod.util.MinecraftUtil;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.level.LevelAccessor;
 
 
-@Mixin(net.minecraft.server.world.ServerWorld.class)
+@Mixin(net.minecraft.server.level.ServerLevel.class)
 @Implements(@Interface(iface = ServerWorld.class, prefix = "terra$"))
 public abstract class ServerWorldMixin {
     public Entity terra$spawnEntity(double x, double y, double z, EntityType entityType) {
-        net.minecraft.server.world.ServerWorld world = (net.minecraft.server.world.ServerWorld) (Object) this;
-        net.minecraft.entity.Entity entity = ((net.minecraft.entity.EntityType<?>) entityType).create(world, SpawnReason.CHUNK_GENERATION);
-        entity.setPos(x, y, z);
-        world.spawnEntity(entity);
+        net.minecraft.server.level.ServerLevel world = (net.minecraft.server.level.ServerLevel) (Object) this;
+        net.minecraft.world.entity.Entity entity = ((net.minecraft.world.entity.EntityType<?>) entityType).create(world, EntitySpawnReason.CHUNK_GENERATION);
+        entity.setPosRaw(x, y, z);
+        world.addFreshEntity(entity);
         return (Entity) entity;
     }
 
     public void terra$setBlockState(int x, int y, int z, BlockState data, boolean physics) {
         BlockPos pos = new BlockPos(x, y, z);
-        ((net.minecraft.server.world.ServerWorld) (Object) this).setBlockState(pos, (net.minecraft.block.BlockState) data,
+        ((net.minecraft.server.level.ServerLevel) (Object) this).setBlock(pos, (net.minecraft.world.level.block.state.BlockState) data,
             physics ? 3 : 1042);
     }
 
     @Intrinsic
     public long terra$getSeed() {
-        return ((net.minecraft.server.world.ServerWorld) (Object) this).getSeed();
+        return ((net.minecraft.server.level.ServerLevel) (Object) this).getSeed();
     }
 
     public int terra$getMaxHeight() {
-        return (((net.minecraft.server.world.ServerWorld) (Object) this).getBottomY()) +
-               ((net.minecraft.server.world.ServerWorld) (Object) this).getHeight();
+        return (((net.minecraft.server.level.ServerLevel) (Object) this).getMinY()) +
+               ((net.minecraft.server.level.ServerLevel) (Object) this).getHeight();
     }
 
     public Chunk terra$getChunkAt(int x, int z) {
-        return (Chunk) ((net.minecraft.server.world.ServerWorld) (Object) this).getChunk(x, z);
+        return (Chunk) ((net.minecraft.server.level.ServerLevel) (Object) this).getChunk(x, z);
     }
 
     public BlockState terra$getBlockState(int x, int y, int z) {
-        return (BlockState) ((net.minecraft.server.world.ServerWorld) (Object) this).getBlockState(new BlockPos(x, y, z));
+        return (BlockState) ((net.minecraft.server.level.ServerLevel) (Object) this).getBlockState(new BlockPos(x, y, z));
     }
 
     public BlockEntity terra$getBlockEntity(int x, int y, int z) {
-        return MinecraftUtil.createBlockEntity((WorldAccess) this, new BlockPos(x, y, z));
+        return MinecraftUtil.createBlockEntity((LevelAccessor) this, new BlockPos(x, y, z));
     }
 
     public int terra$getMinHeight() {
-        return ((net.minecraft.server.world.ServerWorld) (Object) this).getBottomY();
+        return ((net.minecraft.server.level.ServerLevel) (Object) this).getMinY();
     }
 
     public ChunkGenerator terra$getGenerator() {
-        return ((MinecraftChunkGeneratorWrapper) ((net.minecraft.server.world.ServerWorld) (Object) this).getChunkManager()
-            .getChunkGenerator()).getHandle();
+        return ((MinecraftChunkGeneratorWrapper) ((net.minecraft.server.level.ServerLevel) (Object) this).getChunkSource()
+            .getGenerator()).getHandle();
     }
 
     public BiomeProvider terra$getBiomeProvider() {
-        return ((TerraBiomeSource) ((net.minecraft.server.world.ServerWorld) (Object) this).getChunkManager()
-            .getChunkGenerator()
+        return ((TerraBiomeSource) ((net.minecraft.server.level.ServerLevel) (Object) this).getChunkSource()
+            .getGenerator()
             .getBiomeSource()).getProvider();
     }
 
     public ConfigPack terra$getPack() {
-        net.minecraft.world.gen.chunk.ChunkGenerator generator =
-            (((net.minecraft.server.world.ServerWorld) (Object) this).getChunkManager()).getChunkGenerator();
+        net.minecraft.world.level.chunk.ChunkGenerator generator =
+            (((net.minecraft.server.level.ServerLevel) (Object) this).getChunkSource()).getGenerator();
         if(generator instanceof MinecraftChunkGeneratorWrapper minecraftChunkGeneratorWrapper) {
             return minecraftChunkGeneratorWrapper.getPack();
         }

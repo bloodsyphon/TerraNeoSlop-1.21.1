@@ -17,16 +17,16 @@
 
 package com.dfsek.terra.neoforge.mixin.implementations.terra.block.entity;
 
-import net.minecraft.block.entity.LootableContainerBlockEntity;
 import org.spongepowered.asm.mixin.Implements;
 import org.spongepowered.asm.mixin.Interface;
 import org.spongepowered.asm.mixin.Mixin;
 
 import com.dfsek.terra.api.block.entity.Container;
 import com.dfsek.terra.api.inventory.Inventory;
+import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
 
 
-@Mixin(LootableContainerBlockEntity.class)
+@Mixin(RandomizableContainerBlockEntity.class)
 @Implements(@Interface(iface = Container.class, prefix = "terra$"))
 public abstract class LootableContainerBlockEntityMixin extends BlockEntityMixin {
     public Inventory terra$getInventory() {

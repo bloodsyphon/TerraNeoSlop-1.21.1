@@ -1,11 +1,11 @@
 package com.dfsek.terra.mod.util;
 
-import net.minecraft.block.spawner.MobSpawnerEntry;
-import net.minecraft.block.spawner.MobSpawnerLogic;
-import net.minecraft.world.biome.Biome;
-import net.minecraft.world.gen.StructureAccessor;
-
 import java.lang.reflect.Field;
+import net.minecraft.world.level.BaseSpawner;
+import net.minecraft.world.level.SpawnData;
+import net.minecraft.world.level.StructureManager;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.Biome.TemperatureModifier;
 
 
 public final class ReflectionAccess {
@@ -19,25 +19,43 @@ public final class ReflectionAccess {
     private ReflectionAccess() {
     }
 
-    public static Biome.Weather getBiomeWeather(Biome biome) {
+    public static float getBiomeDownfall(Biome biome) {
+        Object weather = getBiomeWeather(biome);
+        try {
+            return (float) weather.getClass().getMethod("downfall").invoke(weather);
+        } catch(ReflectiveOperationException e) {
+            throw new IllegalStateException("Unable to read biome downfall", e);
+        }
+    }
+
+    public static TemperatureModifier getBiomeTemperatureModifier(Biome biome) {
+        Object weather = getBiomeWeather(biome);
+        try {
+            return (TemperatureModifier) weather.getClass().getMethod("temperatureModifier").invoke(weather);
+        } catch(ReflectiveOperationException e) {
+            throw new IllegalStateException("Unable to read biome temperature modifier", e);
+        }
+    }
+
+    private static Object getBiomeWeather(Biome biome) {
         try {
             Field field = getOrResolveBiomeWeatherField();
-            return (Biome.Weather) field.get(biome);
+            return field.get(biome);
         } catch(IllegalAccessException e) {
             throw new IllegalStateException("Unable to read biome weather field", e);
         }
     }
 
-    public static MobSpawnerEntry getMobSpawnerEntry(MobSpawnerLogic logic) {
+    public static SpawnData getMobSpawnerEntry(BaseSpawner logic) {
         try {
             Field field = getOrResolveSpawnerEntryField();
-            return (MobSpawnerEntry) field.get(logic);
+            return (SpawnData) field.get(logic);
         } catch(IllegalAccessException e) {
             throw new IllegalStateException("Unable to read spawner entry field", e);
         }
     }
 
-    public static Object getStructureAccessorWorld(StructureAccessor accessor) {
+    public static Object getStructureAccessorWorld(StructureManager accessor) {
         try {
             Field field = getOrResolveStructureAccessorWorldField();
             return field.get(accessor);
@@ -58,7 +76,7 @@ public final class ReflectionAccess {
     private static Field getOrResolveSpawnerEntryField() {
         Field field = spawnerEntryField;
         if(field == null) {
-            field = findField(MobSpawnerLogic.class, SPAWNER_ENTRY_FIELD_NAMES);
+            field = findField(BaseSpawner.class, SPAWNER_ENTRY_FIELD_NAMES);
             spawnerEntryField = field;
         }
         return field;
@@ -67,7 +85,7 @@ public final class ReflectionAccess {
     private static Field getOrResolveStructureAccessorWorldField() {
         Field field = structureAccessorWorldField;
         if(field == null) {
-            field = findField(StructureAccessor.class, STRUCTURE_ACCESSOR_WORLD_FIELD_NAMES);
+            field = findField(StructureManager.class, STRUCTURE_ACCESSOR_WORLD_FIELD_NAMES);
             structureAccessorWorldField = field;
         }
         return field;

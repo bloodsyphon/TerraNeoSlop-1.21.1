@@ -16,7 +16,7 @@ includeImmediateChildren(file("common/implementation"), "implementation")
 
 includeImmediateChildren(file("common/addons"), "addon")
 
-// Only build NeoForge platform for 1.21.11
+// Only build NeoForge platform for 26.2
 include(":platforms:mixin-common")
 include(":platforms:mixin-lifecycle")
 include(":platforms:neoforge")

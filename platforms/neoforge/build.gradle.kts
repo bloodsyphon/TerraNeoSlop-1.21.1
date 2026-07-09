@@ -1,11 +1,5 @@
 plugins {
-    id("dev.architectury.loom") version Versions.Mod.architecturyLoom
-    id("architectury-plugin") version Versions.Mod.architecturyPlugin
-}
-
-architectury {
-    platformSetupLoomIde()
-    loader("neoforge")
+    id("net.neoforged.moddev") version Versions.NeoForge.modDevGradle
 }
 
 repositories {
@@ -14,50 +8,33 @@ repositories {
     }
 }
 
-loom {
-    mixin {
-        useLegacyMixinAp.set(true)
+neoForge {
+    version = Versions.NeoForge.neoforge
+
+    runs {
+        configureEach {
+            systemProperty("mixin.debug.export", "true")
+        }
+        create("client") {
+            client()
+        }
+        create("server") {
+            server()
+            programArgument("--nogui")
+        }
     }
 }
 
 dependencies {
     annotationProcessor("net.fabricmc:sponge-mixin:${Versions.Mod.mixin}")
-    annotationProcessor("dev.architectury:architectury-loom:${Versions.Mod.architecturyLoom}")
 
     shadedApi(project(":common:implementation:base"))
 
     // NeoForge has platform-specific mixins, but still needs utility classes from mixin modules
     // Shade the modules to include utility classes, but don't load their mixin configs (removed from neoforge.mods.toml)
-    shadedApi(project(path = ":platforms:mixin-common", configuration = "namedElements")) { isTransitive = false }
-    shadedApi(project(path = ":platforms:mixin-lifecycle", configuration = "namedElements")) { isTransitive = false }
-
-    minecraft("com.mojang:minecraft:${Versions.Mod.minecraft}")
-    mappings(loom.layered {
-        mappings("net.fabricmc:yarn:${Versions.Mod.yarn}:v2")
-        mappings("dev.architectury:yarn-mappings-patch-neoforge:${Versions.Mod.yarnMappingsPatchNeoForge}")
-    })
-
-    add("neoForge", "net.neoforged:neoforge:${Versions.NeoForge.neoforge}")
+    shadedApi(project(":platforms:mixin-common")) { isTransitive = false }
+    shadedApi(project(":platforms:mixin-lifecycle")) { isTransitive = false }
 }
-
-loom {
-    accessWidenerPath.set(project(":platforms:mixin-common").file("src/main/resources/terra.accesswidener"))
-
-    mixin {
-        defaultRefmapName.set("terra.neoforge.refmap.json")
-    }
-
-    runs {
-        named("client") {
-            property("mixin.debug.export", "true")
-        }
-        named("server") {
-            property("mixin.debug.export", "true")
-        }
-    }
-}
-
-addonDir(project.file("./run/config/Terra/addons"), tasks.named("configureLaunch").get())
 
 tasks {
     jar {
@@ -87,12 +64,6 @@ tasks {
         exclude("terra.lifecycle.refmap.json")
         // NeoForge runtime already provides SLF4J; bundling it causes classloader LinkageError in PROD.
         exclude("org/slf4j/**")
-    }
-
-    remapJar {
-        dependsOn("installAddons")
-
-        inputFile.set(shadowJar.get().archiveFile)
         archiveFileName.set("TerraNeoSlop-NeoForge-MC${Versions.Mod.minecraft}-${project.version}.jar")
     }
 }

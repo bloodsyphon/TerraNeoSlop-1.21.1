@@ -17,8 +17,6 @@
 
 package com.dfsek.terra.neoforge.mixin.implementations.terra.chunk.data;
 
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.HeightLimitView;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Implements;
 import org.spongepowered.asm.mixin.Interface;
@@ -27,19 +25,21 @@ import org.spongepowered.asm.mixin.Shadow;
 
 import com.dfsek.terra.api.block.state.BlockState;
 import com.dfsek.terra.api.world.chunk.generation.ProtoChunk;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.LevelHeightAccessor;
 
 
-@Mixin(net.minecraft.world.chunk.ProtoChunk.class)
+@Mixin(net.minecraft.world.level.chunk.ProtoChunk.class)
 @Implements(@Interface(iface = ProtoChunk.class, prefix = "terra$"))
 public abstract class ProtoChunkMixin {
     @Shadow
-    public abstract net.minecraft.block.BlockState getBlockState(BlockPos pos);
+    public abstract net.minecraft.world.level.block.state.BlockState getBlockState(BlockPos pos);
 
     @Shadow
-    public abstract HeightLimitView getHeightLimitView();
+    public abstract LevelHeightAccessor getHeightAccessorForGeneration();
 
     public void terra$setBlock(int x, int y, int z, @NotNull BlockState blockState) {
-        ((net.minecraft.world.chunk.Chunk) (Object) this).setBlockState(new BlockPos(x, y, z), (net.minecraft.block.BlockState) blockState,
+        ((net.minecraft.world.level.chunk.ChunkAccess) (Object) this).setBlockState(new BlockPos(x, y, z), (net.minecraft.world.level.block.state.BlockState) blockState,
             0);
     }
 
@@ -48,6 +48,6 @@ public abstract class ProtoChunkMixin {
     }
 
     public int terra$getMaxHeight() {
-        return getHeightLimitView().getTopYInclusive();
+        return getHeightAccessorForGeneration().getMaxY();
     }
 }

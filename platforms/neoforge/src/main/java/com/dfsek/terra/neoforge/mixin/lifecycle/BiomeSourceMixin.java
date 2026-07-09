@@ -1,6 +1,5 @@
 package com.dfsek.terra.neoforge.mixin.lifecycle;
 
-import net.minecraft.world.biome.source.BiomeSource;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -13,6 +12,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.function.Supplier;
+import net.minecraft.world.level.biome.BiomeSource;
 
 
 @Mixin(BiomeSource.class)

@@ -1,6 +1,5 @@
 package com.dfsek.terra.neoforge.mixin.lifecycle;
 
-import net.minecraft.server.SaveLoading;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -13,9 +12,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
+import net.minecraft.server.WorldLoader;
 
 
-@Mixin(SaveLoading.class)
+@Mixin(WorldLoader.class)
 public class SaveLoadingMixin {
     @Unique
     private static final Logger LOGGER = LoggerFactory.getLogger(SaveLoadingMixin.class);
@@ -23,14 +23,12 @@ public class SaveLoadingMixin {
     private static boolean terra$loggedBootstrapContext = false;
 
     @Inject(
-        method = "load(Lnet/minecraft/server/SaveLoading$ServerConfig;Lnet/minecraft/server/SaveLoading$LoadContextSupplier;" +
-                 "Lnet/minecraft/server/SaveLoading$SaveApplierFactory;Ljava/util/concurrent/Executor;Ljava/util/concurrent/Executor;)" +
-                 "Ljava/util/concurrent/CompletableFuture;",
+        method = "load(Lnet/minecraft/server/WorldLoader$InitConfig;Lnet/minecraft/server/WorldLoader$WorldDataSupplier;Lnet/minecraft/server/WorldLoader$ResultFactory;Ljava/util/concurrent/Executor;Ljava/util/concurrent/Executor;)Ljava/util/concurrent/CompletableFuture;",
         at = @At("HEAD"),
         remap = false
     )
     private static void terra$ensureBootstrap(CallbackInfoReturnable<CompletableFuture<?>> cir) {
-        ClassLoader loader = SaveLoading.class.getClassLoader();
+        ClassLoader loader = WorldLoader.class.getClassLoader();
         try {
             Class<?> bootstrapClass = Class.forName("net.minecraft.Bootstrap", true, loader);
             Method initialize = bootstrapClass.getMethod("initialize");

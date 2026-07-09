@@ -30,8 +30,8 @@ fun Project.configureCompilation() {
     }
     
     configure<JavaPluginExtension> {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
+        sourceCompatibility = JavaVersion.VERSION_25
+        targetCompatibility = JavaVersion.VERSION_25
     }
     
     tasks.withType<JavaCompile> {

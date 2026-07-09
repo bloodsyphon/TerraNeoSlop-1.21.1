@@ -2,7 +2,7 @@
     "required": true,
     "minVersion": "0.8",
     "package": "com.dfsek.terra.neoforge.mixin",
-    "compatibilityLevel": "JAVA_21",
+    "compatibilityLevel": "JAVA_25",
     "refmap": "terra.neoforge.refmap.json",
     "mixins": [
         "implementations.terra.BiomeMixin",
@@ -31,10 +31,11 @@
         "implementations.terra.inventory.meta.ItemStackMetaMixin",
         "implementations.terra.world.ChunkRegionMixin",
         "implementations.terra.world.ServerWorldMixin",
+        "access.RegistryLoadTaskAccessor",
         "invoke.FluidBlockInvoker",
         "lifecycle.DataPackContentsMixin",
         "lifecycle.MinecraftServerMixin",
-        "lifecycle.RegistryLoaderMixin",
+        "lifecycle.RegistryDataLoaderMixin",
         "NoiseConfigMixin",
         "RegistryEntryReferenceInvoker",
         "SimpleRegistryMixin"

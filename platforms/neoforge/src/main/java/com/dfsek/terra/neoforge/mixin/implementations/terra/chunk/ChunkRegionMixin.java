@@ -17,8 +17,6 @@
 
 package com.dfsek.terra.neoforge.mixin.implementations.terra.chunk;
 
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.ChunkRegion;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Implements;
@@ -28,31 +26,33 @@ import org.spongepowered.asm.mixin.Shadow;
 
 import com.dfsek.terra.api.block.state.BlockState;
 import com.dfsek.terra.api.world.chunk.Chunk;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.WorldGenRegion;
 
 
-@Mixin(ChunkRegion.class)
+@Mixin(WorldGenRegion.class)
 @Implements(@Interface(iface = Chunk.class, prefix = "terraChunk$"))
 public abstract class ChunkRegionMixin {
 
     @Shadow
     @Final
-    private net.minecraft.world.chunk.Chunk centerPos;
+    private net.minecraft.world.level.chunk.ChunkAccess center;
 
     public void terraChunk$setBlock(int x, int y, int z, @NotNull BlockState blockState, boolean physics) {
-        ((ChunkRegion) (Object) this).setBlockState(new BlockPos(x + (centerPos.getPos().x << 4), y, z + (centerPos.getPos().z << 4)),
-            (net.minecraft.block.BlockState) blockState, 0);
+        ((WorldGenRegion) (Object) this).setBlock(new BlockPos(x + (center.getPos().x() << 4), y, z + (center.getPos().z() << 4)),
+            (net.minecraft.world.level.block.state.BlockState) blockState, 0);
     }
 
     public @NotNull BlockState terraChunk$getBlock(int x, int y, int z) {
-        return (BlockState) ((ChunkRegion) (Object) this).getBlockState(
-            new BlockPos(x + (centerPos.getPos().x << 4), y, z + (centerPos.getPos().z << 4)));
+        return (BlockState) ((WorldGenRegion) (Object) this).getBlockState(
+            new BlockPos(x + (center.getPos().x() << 4), y, z + (center.getPos().z() << 4)));
     }
 
     public int terraChunk$getX() {
-        return centerPos.getPos().x;
+        return center.getPos().x();
     }
 
     public int terraChunk$getZ() {
-        return centerPos.getPos().z;
+        return center.getPos().z();
     }
 }

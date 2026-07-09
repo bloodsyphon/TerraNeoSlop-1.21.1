@@ -18,16 +18,15 @@
 package com.dfsek.terra.mod.generation;
 
 import com.mojang.serialization.MapCodec;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.world.biome.Biome;
-import net.minecraft.world.biome.source.BiomeSource;
-import net.minecraft.world.biome.source.util.MultiNoiseUtil.MultiNoiseSampler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-
+import net.minecraft.core.Holder;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.BiomeSource;
+import net.minecraft.world.level.biome.Climate.Sampler;
 import com.dfsek.terra.api.config.ConfigPack;
 import com.dfsek.terra.api.world.biome.generation.BiomeProvider;
 import com.dfsek.terra.mod.config.ProtoPlatformBiome;
@@ -46,12 +45,12 @@ public class TerraBiomeSource extends BiomeSource {
     }
 
     @Override
-    protected MapCodec<? extends BiomeSource> getCodec() {
+    protected MapCodec<? extends BiomeSource> codec() {
         return Codecs.TERRA_BIOME_SOURCE;
     }
 
     @Override
-    protected Stream<RegistryEntry<Biome>> biomeStream() {
+    protected Stream<Holder<Biome>> collectPossibleBiomes() {
         return StreamSupport
             .stream(pack.getBiomeProvider()
                 .getBiomes()
@@ -60,7 +59,7 @@ public class TerraBiomeSource extends BiomeSource {
     }
 
     @Override
-    public RegistryEntry<Biome> getBiome(int biomeX, int biomeY, int biomeZ, MultiNoiseSampler Sampler) {
+    public Holder<Biome> getNoiseBiome(int biomeX, int biomeY, int biomeZ, Sampler Sampler) {
         return ((ProtoPlatformBiome) pack
             .getBiomeProvider()
             .getBiome(biomeX << 2, biomeY << 2, biomeZ << 2, SeedHack.getSeed(Sampler))

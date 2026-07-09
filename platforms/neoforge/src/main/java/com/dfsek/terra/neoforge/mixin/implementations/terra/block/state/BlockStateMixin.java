@@ -1,33 +1,28 @@
 package com.dfsek.terra.neoforge.mixin.implementations.terra.block.state;
 
 
-import com.google.common.collect.ImmutableMap;
-import com.mojang.serialization.MapCodec;
-import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
-import net.minecraft.block.AbstractBlock.AbstractBlockState;
-import net.minecraft.block.Block;
-import net.minecraft.registry.Registries;
-import net.minecraft.state.State;
 import org.spongepowered.asm.mixin.Implements;
 import org.spongepowered.asm.mixin.Interface;
 import org.spongepowered.asm.mixin.Intrinsic;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
-import java.util.Map;
 import java.util.stream.Collectors;
-
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockBehaviour.BlockStateBase;
+import net.minecraft.world.level.block.state.StateHolder;
 import com.dfsek.terra.api.block.BlockType;
 import com.dfsek.terra.api.block.state.BlockState;
 import com.dfsek.terra.api.block.state.properties.Property;
 
 
-@Mixin(AbstractBlockState.class)
+@Mixin(BlockStateBase.class)
 @Implements(@Interface(iface = BlockState.class, prefix = "terra$"))
-public abstract class BlockStateMixin extends State<Block, net.minecraft.block.BlockState> {
-    private BlockStateMixin(Block owner, Reference2ObjectArrayMap<net.minecraft.state.property.Property<?>, Comparable<?>> entries,
-                            MapCodec<net.minecraft.block.BlockState> codec) {
-        super(owner, entries, codec);
+public abstract class BlockStateMixin extends StateHolder<Block, net.minecraft.world.level.block.state.BlockState> {
+    private BlockStateMixin(Block owner, net.minecraft.world.level.block.state.properties.Property<?>[] properties,
+                            Comparable<?>[] values) {
+        super(owner, properties, values);
     }
 
     @Shadow
@@ -37,13 +32,13 @@ public abstract class BlockStateMixin extends State<Block, net.minecraft.block.B
     public abstract boolean isAir();
 
     public boolean terra$matches(BlockState other) {
-        return getBlock() == ((net.minecraft.block.BlockState) other).getBlock();
+        return getBlock() == ((net.minecraft.world.level.block.state.BlockState) other).getBlock();
     }
 
     @Intrinsic
     public <T extends Comparable<T>> boolean terra$has(Property<T> property) {
-        if(property instanceof net.minecraft.state.property.Property<?> minecraftProperty) {
-            return contains(minecraftProperty);
+        if(property instanceof net.minecraft.world.level.block.state.properties.Property<?> minecraftProperty) {
+            return hasProperty(minecraftProperty);
         }
         return false;
     }
@@ -51,13 +46,13 @@ public abstract class BlockStateMixin extends State<Block, net.minecraft.block.B
     @SuppressWarnings("unchecked")
     @Intrinsic
     public <T extends Comparable<T>> T terra$get(Property<T> property) {
-        return get((net.minecraft.state.property.Property<T>) property);
+        return getValue((net.minecraft.world.level.block.state.properties.Property<T>) property);
     }
 
     @SuppressWarnings("unchecked")
     @Intrinsic
     public <T extends Comparable<T>> BlockState terra$set(Property<T> property, T value) {
-        return (BlockState) with((net.minecraft.state.property.Property<T>) property, value);
+        return (BlockState) setValue((net.minecraft.world.level.block.state.properties.Property<T>) property, value);
     }
 
     @Intrinsic
@@ -67,23 +62,23 @@ public abstract class BlockStateMixin extends State<Block, net.minecraft.block.B
 
     @Intrinsic
     public String terra$getAsString(boolean properties) {
-        StringBuilder data = new StringBuilder(Registries.BLOCK.getId(getBlock()).toString());
-        if(properties && !getEntries().isEmpty()) {
+        StringBuilder data = new StringBuilder(BuiltInRegistries.BLOCK.getKey(getBlock()).toString());
+        if(properties && getValues().findAny().isPresent()) {
             data.append('[');
             data.append(
-                getEntries().entrySet().stream().map(BlockStateMixin::formatPropertyEntry).collect(Collectors.joining(",")));
+                getValues().map(BlockStateMixin::formatPropertyEntry).collect(Collectors.joining(",")));
             data.append(']');
         }
         return data.toString();
     }
 
-    private static String formatPropertyEntry(Map.Entry<net.minecraft.state.property.Property<?>, Comparable<?>> entry) {
-        return propertyToString(entry.getKey(), entry.getValue());
+    private static String formatPropertyEntry(net.minecraft.world.level.block.state.properties.Property.Value<?> entry) {
+        return propertyToString(entry.property(), entry.value());
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    private static String propertyToString(net.minecraft.state.property.Property property, Comparable value) {
-        return property.getName() + "=" + property.name(value);
+    private static String propertyToString(net.minecraft.world.level.block.state.properties.Property property, Comparable value) {
+        return property.getName() + "=" + property.getName(value);
     }
 
     @Intrinsic

@@ -1,16 +1,16 @@
 package com.dfsek.terra.lifecycle.util;
 
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.util.Identifier;
-import net.minecraft.village.VillagerType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Objects;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.entity.npc.villager.VillagerType;
 import java.lang.reflect.Field;
 
 import com.dfsek.terra.api.config.ConfigPack;
@@ -31,7 +31,7 @@ public final class LifecycleBiomeUtil {
 
     }
 
-    public static void registerBiomes(Registry<net.minecraft.world.biome.Biome> biomeRegistry) {
+    public static void registerBiomes(Registry<net.minecraft.world.level.biome.Biome> biomeRegistry) {
         logger.info("Registering biomes...");
         CommonPlatform.get().getConfigRegistry().forEach(pack -> { // Register all Terra biomes.
             pack.getCheckedRegistry(Biome.class)
@@ -48,8 +48,8 @@ public final class LifecycleBiomeUtil {
      */
     private static void registerBiome(Biome biome, ConfigPack pack,
                                       com.dfsek.terra.api.registry.key.RegistryKey id,
-                                      Registry<net.minecraft.world.biome.Biome> registry) {
-        RegistryKey<net.minecraft.world.biome.Biome> vanilla = ((ProtoPlatformBiome) biome.getPlatformBiome()).get(registry);
+                                      Registry<net.minecraft.world.level.biome.Biome> registry) {
+        ResourceKey<net.minecraft.world.level.biome.Biome> vanilla = ((ProtoPlatformBiome) biome.getPlatformBiome()).get(registry);
 
         if(vanilla == null) {
             logger.error("""
@@ -59,16 +59,16 @@ public final class LifecycleBiomeUtil {
         }
 
         if(pack.getContext().get(PreLoadCompatibilityOptions.class).useVanillaBiomes()) {
-            ((ProtoPlatformBiome) biome.getPlatformBiome()).setDelegate(registry.getEntry(registry.get(vanilla)));
+            ((ProtoPlatformBiome) biome.getPlatformBiome()).setDelegate(registry.wrapAsHolder(registry.getValue(vanilla)));
         } else {
             VanillaBiomeProperties vanillaBiomeProperties = biome.getContext().get(VanillaBiomeProperties.class);
 
 
-            net.minecraft.world.biome.Biome vanilaBiome = registry.get(vanilla);
+            net.minecraft.world.level.biome.Biome vanilaBiome = registry.getValue(vanilla);
             if(vanilaBiome == null) {
                 String vanillaBiomeName;
                 if(vanilla != null) {
-                    vanillaBiomeName = vanilla.getValue().toString();
+                    vanillaBiomeName = vanilla.identifier().toString();
                 } else {
                     vanillaBiomeName = "NULL";
                 }
@@ -79,39 +79,38 @@ public final class LifecycleBiomeUtil {
                 return;
             }
 
-            net.minecraft.world.biome.Biome minecraftBiome = BiomeUtil.createBiome(Objects.requireNonNull(vanilaBiome),
+            net.minecraft.world.level.biome.Biome minecraftBiome = BiomeUtil.createBiome(Objects.requireNonNull(vanilaBiome),
                 vanillaBiomeProperties);
 
-            Identifier identifier = Identifier.of("terra", BiomeUtil.createBiomeID(pack, id));
+            Identifier identifier = Identifier.fromNamespaceAndPath("terra", BiomeUtil.createBiomeID(pack, id));
 
-            if(registry.containsId(identifier)) {
+            if(registry.containsKey(identifier)) {
                 ((ProtoPlatformBiome) biome.getPlatformBiome()).setDelegate(MinecraftUtil.getEntry(registry, identifier)
                     .orElseThrow());
             } else {
-                ((ProtoPlatformBiome) biome.getPlatformBiome()).setDelegate(Registry.registerReference(registry,
-                    MinecraftUtil.registerBiomeKey(identifier)
-                        .getValue(),
+                ((ProtoPlatformBiome) biome.getPlatformBiome()).setDelegate(Registry.registerForHolder(registry,
+                    MinecraftUtil.registerBiomeKey(identifier),
                     minecraftBiome));
             }
 
-            Map<RegistryKey<net.minecraft.world.biome.Biome>, RegistryKey<VillagerType>> villagerMap = getVillagerMap();
+            Map<ResourceKey<net.minecraft.world.level.biome.Biome>, ResourceKey<VillagerType>> villagerMap = getVillagerMap();
             if(villagerMap != null) {
-                villagerMap.put(RegistryKey.of(RegistryKeys.BIOME, identifier),
+                villagerMap.put(ResourceKey.create(Registries.BIOME, identifier),
                     Objects.requireNonNullElse(vanillaBiomeProperties.getVillagerType(),
                         villagerMap.getOrDefault(vanilla, VillagerType.PLAINS)));
             }
 
-            BiomeUtil.TERRA_BIOME_MAP.computeIfAbsent(vanilla.getValue(), i -> new ArrayList<>()).add(identifier);
+            BiomeUtil.TERRA_BIOME_MAP.computeIfAbsent(vanilla.identifier(), i -> new ArrayList<>()).add(identifier);
         }
     }
 
     @SuppressWarnings("unchecked")
-    private static Map<RegistryKey<net.minecraft.world.biome.Biome>, RegistryKey<VillagerType>> getVillagerMap() {
+    private static Map<ResourceKey<net.minecraft.world.level.biome.Biome>, ResourceKey<VillagerType>> getVillagerMap() {
         for(String fieldName : VILLAGER_TYPE_FIELD_NAMES) {
             try {
                 Field field = VillagerType.class.getDeclaredField(fieldName);
                 field.setAccessible(true);
-                return (Map<RegistryKey<net.minecraft.world.biome.Biome>, RegistryKey<VillagerType>>) field.get(null);
+                return (Map<ResourceKey<net.minecraft.world.level.biome.Biome>, ResourceKey<VillagerType>>) field.get(null);
             } catch(NoSuchFieldException ignored) {
             } catch(IllegalAccessException e) {
                 logger.warn("Unable to access VillagerType {} map field.", fieldName, e);
